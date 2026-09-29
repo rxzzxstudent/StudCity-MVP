@@ -23,7 +23,7 @@ export const ScannerModal: React.FC<ScannerModalProps> = ({
       setScanning(true);
       const timer = setTimeout(() => {
         setScanning(false);
-        const codeToScan = activeStudentCode ? activeStudentCode.code : 'ST-4821';
+        const codeToScan = activeStudentCode ? activeStudentCode.code : '7492';
         onScanSuccess(codeToScan);
       }, 1800);
 

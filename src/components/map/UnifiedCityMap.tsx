@@ -636,10 +636,14 @@ export const UnifiedCityMap: React.FC = () => {
       {/* Add Spot Modal */}
       <AddSpotModal
         isOpen={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        onClose={() => {
+          setAddModalOpen(false);
+          setIsAddMode(false);
+        }}
         initialCoords={addCoords}
         onAddSpot={(newSpot) => {
           addMapSpot(newSpot);
+          setIsAddMode(false);
           setCenterCoords({ lat: newSpot.lat, lng: newSpot.lng, zoom: 16 });
           showToast(`Точка "${newSpot.title}" добавлена на карту!`);
         }}

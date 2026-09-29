@@ -145,3 +145,10 @@ export async function trackFeedback(payload: FeedbackPayload) {
   console.log('[Nooki Analytics] Feedback submitted:', payload);
   await sendToAnalyticsApi('feedback', payload as unknown as Record<string, unknown>);
 }
+
+// 4. Track UGC Map Spot creation
+export async function trackUserSpot(payload: Record<string, unknown>) {
+  console.log('[Nooki Analytics] Spot added:', payload);
+  await sendToAnalyticsApi('spot', payload);
+}
+

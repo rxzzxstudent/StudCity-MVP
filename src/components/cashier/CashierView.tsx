@@ -17,11 +17,14 @@ import {
   ArrowRight,
   TrendingDown,
   Building2,
-  Volume2
+  Camera,
+  Store
 } from 'lucide-react';
+import { ScannerModal } from './ScannerModal';
 
 export const CashierView: React.FC = () => {
   const {
+    offers,
     urboHappyHoursActive,
     toggleUrboHappyHours,
     activeStudentCode,
@@ -32,8 +35,12 @@ export const CashierView: React.FC = () => {
     redemptionLogs,
   } = useApp();
 
+  const [selectedVenueId, setSelectedVenueId] = useState<string>('coffeemoon-cafe');
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [inputCode, setInputCode] = useState<string>(activeStudentCode ? activeStudentCode.code : '7492');
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  const activeVenue = offers.find((o) => o.id === selectedVenueId) || offers[0];
 
   const triggerConfetti = () => {
     try {
@@ -48,13 +55,14 @@ export const CashierView: React.FC = () => {
     }
   };
 
-  const handleValidate = () => {
-    if (!inputCode.trim()) {
+  const handleValidate = (codeToCheck?: string) => {
+    const code = (codeToCheck || inputCode).trim();
+    if (!code) {
       setValidationError('Пожалуйста, введите 4-значный PIN код студента (например, 7492)');
       return;
     }
     setValidationError(null);
-    const result = validateCode(inputCode.trim());
+    const result = validateCode(code, activeVenue.id);
     if (result.success) {
       triggerConfetti();
     }
@@ -63,6 +71,9 @@ export const CashierView: React.FC = () => {
   const handleUseCurrentStudentCode = () => {
     if (activeStudentCode) {
       setInputCode(activeStudentCode.code);
+      if (activeStudentCode.venueId) {
+        setSelectedVenueId(activeStudentCode.venueId);
+      }
     } else {
       setInputCode('7492');
     }
@@ -80,29 +91,48 @@ export const CashierView: React.FC = () => {
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Coffee Moon — Cafe & Wine
+                {activeVenue.name}
               </h1>
               <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-xl border border-slate-200/70">
-                Касса №1 • ул. Манаса, 51
+                Касса партнера • Nooki POS
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Панель управления непиковым трафиком • Терминал валидации Nooki</span>
+              <span>{activeVenue.address}</span>
             </p>
           </div>
         </div>
 
-        {/* Live Window Indicator & Clock */}
+        {/* Venue Switcher & Clock */}
         <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-2xl">
+            <Store className="w-4 h-4 text-blue-600 shrink-0" />
+            <span className="text-xs font-bold text-slate-600">Заведение:</span>
+            <select
+              value={selectedVenueId}
+              onChange={(e) => {
+                setSelectedVenueId(e.target.value);
+                clearLastValidation();
+              }}
+              className="bg-transparent text-xs sm:text-sm font-extrabold text-slate-900 outline-hidden cursor-pointer"
+            >
+              {offers.map((off) => (
+                <option key={off.id} value={off.id}>
+                  {off.name} (-{off.discountPercent}%)
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-slate-700">
             <Clock className="w-4 h-4 text-blue-600" />
-            <span>15:10</span>
+            <span>Окно: {activeVenue.quietHoursWindow || '14:00 – 16:30'}</span>
           </div>
 
           <div className="flex items-center gap-2 bg-amber-50/80 border border-amber-200/70 px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold text-amber-800">
             <TrendingDown className="w-4 h-4 text-amber-600" />
-            <span>Непиковый спад: загрузка {b2bMetrics.currentCapacity}%</span>
+            <span>Спад: загрузка {b2bMetrics.currentCapacity}%</span>
           </div>
         </div>
       </div>
@@ -123,7 +153,7 @@ export const CashierView: React.FC = () => {
                     Валидатор PIN-кода
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Введите 4 цифры, которые назвал студент на кассе
+                    Введите 4 цифры, которые назвал гость на кассе
                   </p>
                 </div>
               </div>
@@ -146,18 +176,27 @@ export const CashierView: React.FC = () => {
                     if (e.key === 'Enter') handleValidate();
                   }}
                   placeholder="7492"
-                  maxLength={7}
+                  maxLength={4}
                   className="w-full bg-slate-50 border-2 border-slate-200 focus:border-blue-600 focus:bg-white rounded-2xl px-4 py-3 font-mono font-black text-2xl text-slate-900 tracking-widest text-center transition outline-hidden"
                 />
               </div>
 
-              <button
-                onClick={handleValidate}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-blue-500/20 transition cursor-pointer flex items-center justify-center gap-2 shrink-0"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Проверить</span>
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => handleValidate()}
+                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-md shadow-blue-500/20 transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Проверить</span>
+                </button>
+                <button
+                  onClick={() => setScannerOpen(true)}
+                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer flex items-center justify-center gap-1.5 border border-slate-200"
+                >
+                  <Camera className="w-4 h-4 text-blue-600" />
+                  <span>Сканер</span>
+                </button>
+              </div>
 
               {/* Quick Helper for Demo */}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5 text-xs">
@@ -167,7 +206,7 @@ export const CashierView: React.FC = () => {
                     className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition cursor-pointer border border-blue-100"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Вставить PIN ({activeStudentCode.code})</span>
+                    <span>PIN студента: {activeStudentCode.code} ({activeStudentCode.venueName})</span>
                   </button>
                 ) : (
                   <button
@@ -365,13 +404,15 @@ export const CashierView: React.FC = () => {
 
             <div className="space-y-2">
               <h4 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug">
-                {urboHappyHoursActive ? 'Скидка 40% активна для гостей Nooki' : 'Скидка временно отключена'}
+                {activeVenue.happyHoursActive
+                  ? `Скидка ${activeVenue.discountPercent}% активна в ${activeVenue.name}`
+                  : 'Скидка временно отключена'}
               </h4>
 
               <p className="text-xs leading-relaxed text-slate-500">
-                {urboHappyHoursActive
-                  ? 'Заведение принимает 4-значные PIN-коды со скидкой 40% до 17:00. Гости приходят в свободное от очередей время.'
-                  : 'Поток гостей приостановлен. Включите, когда зал пустует, чтобы привлечь студентов.'}
+                {activeVenue.happyHoursActive
+                  ? `Заведение принимает 4-значные PIN-коды со скидкой ${activeVenue.discountPercent}% (${activeVenue.quietHoursWindow || 'непик'}). Гости приходят в тихие часы.`
+                  : 'Поток гостей приостановлен. Включите, когда зал пустует, чтобы привлечь горожан со скидкой.'}
               </p>
             </div>
 
@@ -379,15 +420,19 @@ export const CashierView: React.FC = () => {
             <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/80 text-xs space-y-2.5">
               <div className="flex items-center justify-between text-slate-600">
                 <span className="font-medium">Период действия:</span>
-                <span className="font-bold text-slate-900">до 17:00 (непик)</span>
+                <span className="font-bold text-slate-900">{activeVenue.quietHoursWindow || 'Тихие часы'}</span>
               </div>
               <div className="flex items-center justify-between text-slate-600">
                 <span className="font-medium">Размер скидки:</span>
-                <span className="font-black text-emerald-600 text-sm">-40%</span>
+                <span className="font-black text-emerald-600 text-sm">-{activeVenue.discountPercent}%</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-600">
+                <span className="font-medium">Остаток слотов:</span>
+                <span className="font-bold text-slate-900">{activeVenue.slotsRemaining ?? '—'} из {activeVenue.totalSlots ?? '—'}</span>
               </div>
               <div className="flex items-center justify-between text-slate-600">
                 <span className="font-medium">Тип валидации:</span>
-                <span className="font-semibold text-slate-800">4-значный PIN</span>
+                <span className="font-semibold text-slate-800">4-значный PIN / QR</span>
               </div>
             </div>
           </div>
@@ -397,13 +442,13 @@ export const CashierView: React.FC = () => {
             <button
               onClick={toggleUrboHappyHours}
               className={`w-full py-3.5 px-5 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 cursor-pointer shrink-0 ${
-                urboHappyHoursActive
+                activeVenue.happyHoursActive
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-emerald-500/20'
                   : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20'
               }`}
             >
               <Power className="w-4 h-4" />
-              <span>{urboHappyHoursActive ? 'Акция ВКЛЮЧЕНА' : 'ВКЛЮЧИТЬ АКЦИЮ'}</span>
+              <span>{activeVenue.happyHoursActive ? 'Акция ВКЛЮЧЕНА' : 'ВКЛЮЧИТЬ АКЦИЮ'}</span>
             </button>
           </div>
         </div>
@@ -430,7 +475,8 @@ export const CashierView: React.FC = () => {
               <tr className="border-b border-slate-200 text-slate-400 font-semibold">
                 <th className="pb-3 font-semibold">Время</th>
                 <th className="pb-3 font-semibold">PIN код</th>
-                <th className="pb-3 font-semibold">Университет / Гость</th>
+                <th className="pb-3 font-semibold">Заведение</th>
+                <th className="pb-3 font-semibold">Гость / ВУЗ</th>
                 <th className="pb-3 font-semibold text-right">Сумма чека</th>
                 <th className="pb-3 font-semibold text-right">Скидка Nooki</th>
               </tr>
@@ -440,7 +486,8 @@ export const CashierView: React.FC = () => {
                 <tr key={log.id} className="hover:bg-slate-50/80 transition">
                   <td className="py-3 font-mono text-slate-500">{log.timestamp}</td>
                   <td className="py-3 font-mono font-bold text-blue-600">{log.code}</td>
-                  <td className="py-3 text-slate-700 font-medium">{log.studentUni}</td>
+                  <td className="py-3 text-slate-900 font-bold">{log.venueName}</td>
+                  <td className="py-3 text-slate-600 font-medium">{log.studentUni}</td>
                   <td className="py-3 text-right font-black text-slate-900">
                     {log.amount.toLocaleString()} ₸
                   </td>
@@ -454,6 +501,16 @@ export const CashierView: React.FC = () => {
         </div>
       </div>
 
+      {/* Terminal QR / Camera Scanner Modal */}
+      <ScannerModal
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScanSuccess={(scannedCode) => {
+          setInputCode(scannedCode);
+          setScannerOpen(false);
+          handleValidate(scannedCode);
+        }}
+      />
     </div>
   );
 };

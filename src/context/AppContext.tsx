@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Role, Category, VenueOffer, StudentCode, RedemptionLog, B2BMetrics, StudentTab, MapSpot, MapSpotCategory } from '@/types';
 import { INITIAL_MAP_SPOTS } from '@/components/map/spotsData';
-import { trackEvent, trackRedemption } from '@/lib/analytics';
+import { trackEvent, trackRedemption, trackUserSpot } from '@/lib/analytics';
 
 export type SortOption = 'popular' | 'discount' | 'distance' | 'expiring';
 
@@ -42,7 +42,7 @@ interface AppContextType {
   toggleUrboHappyHours: () => void;
   b2bMetrics: B2BMetrics;
   redemptionLogs: RedemptionLog[];
-  validateCode: (codeToValidate: string) => { success: boolean; message: string; codeData?: StudentCode };
+  validateCode: (codeToValidate: string, targetVenueId?: string) => { success: boolean; message: string; codeData?: StudentCode };
   lastValidatedCode: { success: boolean; message: string; codeData?: StudentCode } | null;
   clearLastValidation: () => void;
   resetDemoData: () => void;
@@ -343,10 +343,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setMapSpots((prev) => {
       const updated = [newSpot, ...prev];
       if (typeof window !== 'undefined') {
-        const userAddedOnly = updated.filter((s) => s.isUserAdded);
-        localStorage.setItem('nooki_user_spots', JSON.stringify(userAddedOnly));
+        try {
+          const userAddedOnly = updated.filter((s) => s.isUserAdded);
+          localStorage.setItem('nooki_user_spots', JSON.stringify(userAddedOnly));
+        } catch (err) {
+          console.warn('[LocalStorage Warning] Quota exceeded or error saving spots:', err);
+        }
       }
       return updated;
+    });
+
+    // Sync spot to server/Google Sheets for crowd-sourced map
+    trackUserSpot({
+      title: spotData.title,
+      category: spotData.category,
+      address: spotData.address,
+      isFree: spotData.isFree,
+      priceInfo: spotData.priceInfo,
+      lat: spotData.lat,
+      lng: spotData.lng,
     });
   };
 
@@ -354,8 +369,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setMapSpots((prev) => {
       const updated = prev.filter((s) => s.id !== id);
       if (typeof window !== 'undefined') {
-        const userAddedOnly = updated.filter((s) => s.isUserAdded);
-        localStorage.setItem('nooki_user_spots', JSON.stringify(userAddedOnly));
+        try {
+          const userAddedOnly = updated.filter((s) => s.isUserAdded);
+          localStorage.setItem('nooki_user_spots', JSON.stringify(userAddedOnly));
+        } catch (err) {
+          console.warn('[LocalStorage Warning]:', err);
+        }
       }
       return updated;
     });
@@ -406,14 +425,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const timer = setInterval(() => {
       setOffers((prev) =>
-        prev.map((off) => ({
-          ...off,
-          remainingSeconds: Math.max(0, off.remainingSeconds - 1),
-        }))
+        prev.map((off) => {
+          const nextSec = Math.max(0, off.remainingSeconds - 1);
+          const isSlotActive = nextSec > 0 && (off.id === 'coffeemoon-cafe' ? urboHappyHoursActive : off.happyHoursActive);
+          return {
+            ...off,
+            remainingSeconds: nextSec,
+            happyHoursActive: isSlotActive,
+          };
+        })
       );
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [urboHappyHoursActive]);
 
   // 300s (5-min) countdown for active student PIN/QR code
   useEffect(() => {
@@ -490,37 +514,78 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setUrboHappyHoursActive((prev) => !prev);
   };
 
-  const validateCode = (codeToValidate: string) => {
+  const validateCode = (codeToValidate: string, targetVenueId?: string) => {
     const raw = codeToValidate.trim().toUpperCase();
     const cleanDigits = raw.replace(/[^0-9]/g, '');
-    if (!raw) {
-      const res = { success: false, message: 'Пожалуйста, введите 4-значный PIN код студента' };
+    if (!raw || cleanDigits.length < 4) {
+      const res = { success: false, message: 'Пожалуйста, введите 4-значный PIN код студента (например, 7492)' };
       setLastValidatedCode(res);
       return res;
     }
 
+    const pinInput = cleanDigits.slice(0, 4);
+    const targetOffer = offers.find((o) => o.id === (targetVenueId || 'coffeemoon-cafe')) || offers[0];
+
     let matchedCodeData: StudentCode;
 
     const currentCodeRaw = activeStudentCode?.code || '';
-    const currentCodeClean = currentCodeRaw.replace(/[^0-9]/g, '');
+    const currentCodeClean = (currentCodeRaw.replace(/[^0-9]/g, '') || '').slice(0, 4);
 
-    if (activeStudentCode && (raw === currentCodeRaw || (cleanDigits && cleanDigits === currentCodeClean))) {
+    if (activeStudentCode) {
+      if (pinInput !== currentCodeClean) {
+        const res = {
+          success: false,
+          message: `Неверный PIN-код. Активный код студента: ${activeStudentCode.code}`,
+        };
+        setLastValidatedCode(res);
+        return res;
+      }
+
+      if (targetVenueId && activeStudentCode.venueId !== targetVenueId) {
+        const res = {
+          success: false,
+          message: `Этот PIN выпущен для заведения «${activeStudentCode.venueName}», а не для «${targetOffer.name}»!`,
+        };
+        setLastValidatedCode(res);
+        return res;
+      }
+
+      if (codeTimeRemaining <= 0) {
+        const res = {
+          success: false,
+          message: 'Срок действия 4-значного PIN-кода (5 минут) истек. Попросите гостя выпустить новый PIN.',
+        };
+        setLastValidatedCode(res);
+        return res;
+      }
+
       matchedCodeData = activeStudentCode;
+      // Mark code as used (single-use token)
+      setActiveStudentCode(null);
     } else {
       matchedCodeData = {
-        code: cleanDigits.slice(0, 4) || raw,
-        venueId: 'coffeemoon-cafe',
-        venueName: 'Coffee Moon — Cafe & Wine',
-        discountPercent: 40,
-        finalPrice: 1600,
-        originalPrice: 2800,
+        code: pinInput,
+        venueId: targetOffer.id,
+        venueName: targetOffer.name,
+        discountPercent: targetOffer.discountPercent,
+        finalPrice: targetOffer.discountedPrice,
+        originalPrice: targetOffer.originalPrice,
         createdAt: Date.now(),
         expiresInSeconds: 300,
-        studentName: 'Алихан Сейткали',
-        studentUni: 'КазНУ им. аль-Фараби',
+        studentName: 'Горожанин Nooki',
+        studentUni: 'Студент / Горожанин',
         isValid: true,
       };
     }
+
+    // Decrement slots remaining on the offer
+    setOffers((prev) =>
+      prev.map((off) =>
+        off.id === matchedCodeData.venueId && typeof off.slotsRemaining === 'number'
+          ? { ...off, slotsRemaining: Math.max(0, off.slotsRemaining - 1) }
+          : off
+      )
+    );
 
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -553,7 +618,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const res = {
       success: true,
-      message: `Код ${matchedCodeData.code} валиден! Скидка ${matchedCodeData.discountPercent}% применена. Сумма к оплате: ${matchedCodeData.finalPrice.toLocaleString()} ₸`,
+      message: `PIN ${matchedCodeData.code} подтвержден в «${matchedCodeData.venueName}»! Скидка -${matchedCodeData.discountPercent}%. К оплате: ${matchedCodeData.finalPrice.toLocaleString()} ₸`,
       codeData: matchedCodeData,
     };
 

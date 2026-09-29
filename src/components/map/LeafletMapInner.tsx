@@ -93,6 +93,15 @@ export const LeafletMapInner: React.FC<LeafletMapInnerProps> = ({
     clickAddCallbackRef.current = onMapClickAdd;
   }, [onMapClickAdd]);
 
+  const isAddModeRef = useRef(isAddMode);
+  useEffect(() => {
+    isAddModeRef.current = isAddMode;
+    if (!isAddMode && tempAddMarkerRef.current) {
+      tempAddMarkerRef.current.remove();
+      tempAddMarkerRef.current = null;
+    }
+  }, [isAddMode]);
+
   // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -119,6 +128,12 @@ export const LeafletMapInner: React.FC<LeafletMapInnerProps> = ({
 
     // Click handler on map to add a new spot
     map.on('click', (e: L.LeafletMouseEvent) => {
+      // If not in add mode, clicking on the map simply deselects any open spot
+      if (!isAddModeRef.current) {
+        onSelectSpot(null);
+        return;
+      }
+
       // Put a temporary pulsating marker where clicked
       if (tempAddMarkerRef.current) {
         tempAddMarkerRef.current.remove();

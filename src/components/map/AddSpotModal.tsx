@@ -99,16 +99,39 @@ export const AddSpotModal: React.FC<AddSpotModalProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 4 * 1024 * 1024) {
-      alert('Размер фото не должен превышать 4 МБ');
+    if (file.size > 8 * 1024 * 1024) {
+      alert('Размер фото не должен превышать 8 МБ');
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setImageUrl(reader.result);
-      }
+    reader.onload = (event) => {
+      if (typeof event.target?.result !== 'string') return;
+      const rawDataUrl = event.target.result;
+
+      // Compress client-side via canvas to prevent localStorage quota exhaustion
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 640;
+        let width = img.width;
+        let height = img.height;
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.75);
+          setImageUrl(compressed);
+        } else {
+          setImageUrl(rawDataUrl);
+        }
+      };
+      img.src = rawDataUrl;
     };
     reader.readAsDataURL(file);
   };

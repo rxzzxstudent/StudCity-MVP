@@ -86,3 +86,15 @@ export function decryptData(cipherText: string): string {
 export function generateRandomAesKey(): string {
   return crypto.randomBytes(32).toString('hex');
 }
+
+/**
+ * Generates a stable deterministic pseudonym for user IDs (e.g. tg_12345 or guest_uuid)
+ * using HMAC-SHA256. This ensures identical user identity across events in SQL views
+ * (view_nooki_funnel, view_nooki_pilot_summary) while protecting user privacy.
+ */
+export function hashUserId(userId: string): string {
+  if (!userId) return 'anon';
+  const key = process.env.ANALYTICS_ENCRYPTION_KEY || 'nooki_default_analytics_salt_2026';
+  return 'uid_' + crypto.createHmac('sha256', key).update(userId).digest('hex').substring(0, 24);
+}
+

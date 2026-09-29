@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { encryptData } from '@/lib/crypto';
+import { encryptData, hashUserId } from '@/lib/crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,7 @@ function getGoogleSheetsWebhookUrl(): string {
 }
 
 // Helper to forward clean data to Google Sheets (3 tabs in 1 spreadsheet)
-async function forwardToGoogleSheets(type: 'event' | 'redemption' | 'feedback', data: Record<string, unknown>) {
+async function forwardToGoogleSheets(type: 'event' | 'redemption' | 'feedback' | 'spot', data: Record<string, unknown>) {
   const webhookUrl = getGoogleSheetsWebhookUrl();
   if (!webhookUrl) return;
 
@@ -37,11 +37,11 @@ export async function POST(req: NextRequest) {
     if (type === 'redemption') {
       const plainUserName = payload.userName || 'Горожанин';
       const encryptedUserName = encryptData(plainUserName);
-      const encryptedUserId = encryptData(payload.userId || 'anonymous');
+      const hashedUserId = hashUserId(payload.userId || 'anonymous');
 
       const redemptionRecord = {
         code: payload.code,
-        user_id: encryptedUserId,
+        user_id: hashedUserId,
         user_name: encryptedUserName,
         venue_id: payload.venueId,
         venue_name: payload.venueName,
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
         created_at: new Date().toISOString(),
       };
 
-      // Save encrypted to Supabase
+      // Save to Supabase
       if (isSupabaseConfigured && supabase) {
         await supabase.from('nooki_redemptions').insert([redemptionRecord]);
       }
@@ -75,11 +75,11 @@ export async function POST(req: NextRequest) {
     if (type === 'event') {
       const plainUserName = payload.userName || 'Пользователь';
       const encryptedUserName = encryptData(plainUserName);
-      const encryptedUserId = encryptData(payload.userId || 'anonymous');
+      const hashedUserId = hashUserId(payload.userId || 'anonymous');
 
       const eventRecord = {
         event_type: payload.eventType,
-        user_id: encryptedUserId,
+        user_id: hashedUserId,
         user_name: encryptedUserName,
         venue_id: payload.venueId || null,
         offer_id: payload.offerId || null,
@@ -109,10 +109,10 @@ export async function POST(req: NextRequest) {
       const plainComment = payload.comment || '';
       const encryptedUserName = encryptData(plainUserName);
       const encryptedComment = encryptData(plainComment);
-      const encryptedUserId = encryptData(payload.userId || 'anonymous');
+      const hashedUserId = hashUserId(payload.userId || 'anonymous');
 
       const feedbackRecord = {
-        user_id: encryptedUserId,
+        user_id: hashedUserId,
         user_name: encryptedUserName,
         venue_id: payload.venueId,
         rating: payload.rating,
@@ -134,6 +134,36 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json({ ok: true, encrypted: true });
+    }
+
+    // 4. Handle UGC Map Spot additions (Краудсорсинг точек)
+    if (type === 'spot') {
+      const plainUserName = payload.userName || 'Горожанин';
+      const hashedUserId = hashUserId(payload.userId || 'anonymous');
+
+      await forwardToGoogleSheets('spot', {
+        date_time: new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' }),
+        user: plainUserName,
+        title: payload.title,
+        category: payload.category,
+        address: payload.address,
+        is_free: payload.isFree ? 'Да' : 'Нет',
+        price_info: payload.priceInfo || '—',
+        lat: payload.lat,
+        lng: payload.lng,
+      });
+
+      // Also record event in funnel
+      if (isSupabaseConfigured && supabase) {
+        await supabase.from('nooki_events').insert([{
+          event_type: 'user_spot_added',
+          user_id: hashedUserId,
+          metadata: { title: payload.title, category: payload.category },
+          created_at: new Date().toISOString(),
+        }]);
+      }
+
+      return NextResponse.json({ ok: true });
     }
 
     return NextResponse.json({ ok: false, error: 'Unknown payload type' }, { status: 400 });

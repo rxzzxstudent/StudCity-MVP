@@ -41,31 +41,18 @@ const CATEGORIES: { id: Category; label: string; icon: React.ReactNode }[] = [
   { id: 'dessert', label: 'Десерты и выпечка', icon: <Cake className="w-3.5 h-3.5" /> },
 ];
 
-const CLUSTERS = [
-  'Все кластеры Алматы',
-  'Кластер Сатпаева — Байтурсынова',
-  'Кампус КазНУ (ГУК)',
-  'Кластер Толе би — Абылай хана (КБТУ/КазНАУ)',
-  'Кампус Satbayev University (Polytech)',
-];
-
 export const StudentView: React.FC = () => {
   const {
     selectedCategory,
     setSelectedCategory,
-    selectedCluster,
-    setSelectedCluster,
     searchQuery,
     setSearchQuery,
     sortBy,
     setSortBy,
     offers,
     openQrModal,
-    viewMode,
-    setStudentTab,
   } = useApp();
 
-  const [clusterDropdownOpen, setClusterDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   // Format seconds to hh:mm:ss
@@ -82,10 +69,6 @@ export const StudentView: React.FC = () => {
       // Category filter
       if (selectedCategory !== 'all' && offer.category !== selectedCategory) {
         return false;
-      }
-      // Cluster filter
-      if (selectedCluster !== 'Все кластеры Алматы' && offer.cluster !== selectedCluster) {
-        // keep URBO and match if needed
       }
       // Text search query
       if (searchQuery.trim()) {
@@ -202,10 +185,7 @@ export const StudentView: React.FC = () => {
           {/* Sorting Dropdown */}
           <div className="sm:col-span-4 lg:col-span-3 relative">
             <button
-              onClick={() => {
-                setSortDropdownOpen(!sortDropdownOpen);
-                setClusterDropdownOpen(false);
-              }}
+              onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
               className="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100/80 border border-slate-200 text-slate-800 px-4 py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm font-semibold transition"
             >
               <div className="flex items-center gap-2 truncate">
@@ -322,15 +302,32 @@ export const StudentView: React.FC = () => {
                       <span className="text-slate-900 text-sm">{offer.name}</span>
                     </div>
 
-                    {offer.happyHoursActive ? (
+                    {offer.happyHoursActive && offer.remainingSeconds > 0 ? (
                       <div className="flex items-center gap-1 text-amber-600 font-mono font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 text-xs">
                         <Clock className="w-3 h-3 text-amber-600" />
                         <span>{formatTime(offer.remainingSeconds)}</span>
                       </div>
                     ) : (
-                      <span className="text-xs text-slate-400 font-medium">Спад окончен</span>
+                      <span className="text-[11px] text-slate-400 font-semibold bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                        Слот окончен
+                      </span>
                     )}
                   </div>
+
+                  {/* Flash slots remaining counter (документация: «осталось X из Y слотов») */}
+                  {typeof offer.slotsRemaining === 'number' && typeof offer.totalSlots === 'number' && (
+                    <div className="flex items-center justify-between bg-amber-50/70 border border-amber-200/70 rounded-xl px-2.5 py-1 text-[11px] font-bold">
+                      <span className="text-amber-800 flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${offer.slotsRemaining > 0 && offer.happyHoursActive ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
+                        <span>Лимит непика:</span>
+                      </span>
+                      <span className="text-amber-950 font-extrabold">
+                        {offer.slotsRemaining > 0
+                          ? `осталось ${offer.slotsRemaining} из ${offer.totalSlots} мест`
+                          : 'Все места заняты'}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Main Offer Title */}
                   <h3 className="font-extrabold text-base text-slate-900 leading-snug group-hover:text-blue-600 transition">
@@ -406,19 +403,28 @@ export const StudentView: React.FC = () => {
                     </span>
                   </div>
 
-                  <button
-                    type="button"
-                    disabled={!offer.happyHoursActive}
-                    onClick={() => openQrModal(offer)}
-                    className={`py-2.5 px-4 rounded-xl font-black text-xs sm:text-sm flex items-center gap-1.5 transition-all duration-200 shadow-sm cursor-pointer ${
-                      offer.happyHoursActive
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white shadow-blue-500/25'
-                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                    }`}
-                  >
-                    <KeyRound className="w-4 h-4" />
-                    <span>{offer.happyHoursActive ? 'Забрать PIN' : 'На паузе'}</span>
-                  </button>
+                  {(() => {
+                    const isAvailable = offer.happyHoursActive && offer.remainingSeconds > 0 && (offer.slotsRemaining ?? 1) > 0;
+                    return (
+                      <button
+                        type="button"
+                        disabled={!isAvailable}
+                        onClick={() => openQrModal(offer)}
+                        className={`py-2.5 px-4 rounded-xl font-black text-xs sm:text-sm flex items-center gap-1.5 transition-all duration-200 shadow-sm cursor-pointer ${
+                          isAvailable
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white shadow-blue-500/25'
+                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        }`}
+                      >
+                        <KeyRound className="w-4 h-4" />
+                        <span>
+                          {isAvailable
+                            ? 'Забрать PIN'
+                            : (offer.slotsRemaining === 0 ? 'Мест нет' : 'Слот окончен')}
+                        </span>
+                      </button>
+                    );
+                  })()}
                 </div>
 
               </div>
