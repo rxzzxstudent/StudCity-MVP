@@ -55,7 +55,7 @@ function AppContent() {
       </footer>
 
       {/* Modern Mobile Bottom Navigation Bar (3 Clean Tabs) */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] px-2 py-2 pb-3">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] px-2 pt-2.5 pb-[max(1.5rem,env(safe-area-inset-bottom))] touch-manipulation select-none">
         <div className="grid grid-cols-3 max-w-md mx-auto">
           {/* 1. Offers / Slots Tab */}
           <button

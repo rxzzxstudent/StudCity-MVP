@@ -1,0 +1,18 @@
+{
+  "name": "Nooki — Смарт-доступ к непиковым слотам",
+  "short_name": "Nooki",
+  "description": "Nooki — единый городской сервис смарт-доступа к непиковым слотам со скидками и карта города",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/nooki-loop-app-icon(1).svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
