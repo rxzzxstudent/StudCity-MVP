@@ -177,7 +177,7 @@ export const UnifiedCityMap: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 transition-all duration-300">
+    <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 py-3 sm:py-4 transition-all duration-300">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-5 z-50 bg-slate-900/90 backdrop-blur-md text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl border border-white/10 flex items-center gap-2 animate-fade-in">
@@ -370,8 +370,8 @@ export const UnifiedCityMap: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Main Map Canvas (Full-Width, Unobstructed, Spacious) */}
-      <div className="relative w-full h-[580px] sm:h-[680px] rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
+      {/* 2. Main Map Canvas (Full-Width, Responsive for laptops & desktops) */}
+      <div className="relative w-full h-[65vh] min-h-[460px] max-h-[750px] rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
         <LeafletMapInner
           spots={filteredSpots}
           selectedSpot={selectedMapSpot}
@@ -563,10 +563,10 @@ export const UnifiedCityMap: React.FC = () => {
                   const match = offers.find((o) => o.id === selectedMapSpot.offerId);
                   if (match) openQrModal(match);
                 }}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white font-extrabold text-xs py-2 px-3 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white font-extrabold text-xs py-2 px-3 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>🔥</span>
-                <span>Получить QR со скидкой</span>
+                <span>Забрать PIN со скидкой</span>
               </button>
             )}
 

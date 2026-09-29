@@ -2,22 +2,21 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MapSpot, MapSpotCategory } from '@/types';
-import { PRESET_SPOT_PHOTOS } from './spotsData';
 import { 
   X, 
   PlusCircle, 
   MapPin, 
   Check, 
-  Upload, 
   Camera, 
   Coins, 
   Wifi, 
   Zap, 
-  Sparkles, 
-  Image as ImageIcon,
-  Clock,
+  Clock, 
   Crosshair,
-  Trash2
+  Printer,
+  Sparkles,
+  Layers,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface AddSpotModalProps {
@@ -26,25 +25,6 @@ interface AddSpotModalProps {
   initialCoords: { lat: number; lng: number } | null;
   onAddSpot: (spot: Omit<MapSpot, 'id'>) => void;
 }
-
-const CAMPUS_PRESETS = [
-  { name: 'КазНУ (ГУК)', lat: 43.2245, lng: 76.9218, address: 'Кампус КазНУ им. аль-Фараби' },
-  { name: 'Satbayev (Политех)', lat: 43.2375, lng: 76.9268, address: 'ул. Сатпаева, 22' },
-  { name: 'КБТУ (Центр)', lat: 43.2558, lng: 76.9435, address: 'ул. Толе би, 59' },
-  { name: 'Арбат', lat: 43.2625, lng: 76.9420, address: 'ул. Жибек Жолы (Арбат)' },
-  { name: 'Dostyk Plaza', lat: 43.2335, lng: 76.9568, address: 'мкр. Самал-2, 111' },
-];
-
-const TOILET_AMENITIES = [
-  'Туалетная бумага',
-  'Мыло',
-  'Сушилка для рук',
-  'Зеркало',
-  'Горячая вода',
-  'Доступ для инвалидов',
-];
-
-const PAYMENT_OPTIONS = ['Kaspi QR', 'Банковская карта', 'Наличные', 'По чеку кафе'];
 
 export const AddSpotModal: React.FC<AddSpotModalProps> = ({
   isOpen,
@@ -58,24 +38,19 @@ export const AddSpotModal: React.FC<AddSpotModalProps> = ({
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(initialCoords);
   const [isLocating, setIsLocating] = useState(false);
 
-  // Price state
+  // Price state - no autofilled strings
   const [isFree, setIsFree] = useState(true);
-  const [numericPrice, setNumericPrice] = useState<number>(50);
+  const [numericPrice, setNumericPrice] = useState<number | ''>('');
   const [priceCustomText, setPriceCustomText] = useState('');
-  const [selectedPayments, setSelectedPayments] = useState<string[]>(['Kaspi QR']);
 
-  // Photo state
+  // Photo state - clean and optional, no forced preset
   const [imageUrl, setImageUrl] = useState('');
-  const [photoMode, setPhotoMode] = useState<'preset' | 'upload' | 'url'>('preset');
+  const [showPhotoInput, setShowPhotoInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Category specific state
-  const [hours, setHours] = useState('08:00 – 22:00');
+  // Optional fields - empty by default without autofill
+  const [hours, setHours] = useState('');
   const [description, setDescription] = useState('');
-  const [wifiSpeed, setWifiSpeed] = useState('100 Мбит/с');
-  const [wifiPassword, setWifiPassword] = useState('Без пароля (открытая)');
-  const [outletCount, setOutletCount] = useState('У каждого стола');
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(['Туалетная бумага', 'Мыло']);
 
   useEffect(() => {
     if (initialCoords) {
@@ -83,19 +58,24 @@ export const AddSpotModal: React.FC<AddSpotModalProps> = ({
     }
   }, [initialCoords]);
 
-  // Set default photo when category changes if no custom uploaded photo
+  // Reset form when modal opens
   useEffect(() => {
-    if (photoMode === 'preset') {
-      const presets = PRESET_SPOT_PHOTOS[category];
-      if (presets && presets.length > 0) {
-        setImageUrl(presets[0].url);
-      }
+    if (isOpen) {
+      setTitle('');
+      setAddress('');
+      setHours('');
+      setDescription('');
+      setIsFree(true);
+      setNumericPrice('');
+      setPriceCustomText('');
+      setImageUrl('');
+      setShowPhotoInput(false);
+      if (initialCoords) setCoords(initialCoords);
     }
-  }, [category, photoMode]);
+  }, [isOpen, initialCoords]);
 
   if (!isOpen) return null;
 
-  // Handle GPS location
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
       alert('Геолокация не поддерживается вашим браузером');
@@ -105,8 +85,7 @@ export const AddSpotModal: React.FC<AddSpotModalProps> = ({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setIsLocating(false);
-        const newC = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setCoords(newC);
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       },
       (err) => {
         setIsLocating(false);
@@ -116,7 +95,6 @@ export const AddSpotModal: React.FC<AddSpotModalProps> = ({
     );
   };
 
-  // Handle file upload -> base64
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -130,22 +108,9 @@ export const AddSpotModal: React.FC<AddSpotModalProps> = ({
     reader.onload = () => {
       if (typeof reader.result === 'string') {
         setImageUrl(reader.result);
-        setPhotoMode('upload');
       }
     };
     reader.readAsDataURL(file);
-  };
-
-  const toggleAmenity = (item: string) => {
-    setSelectedAmenities((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
-    );
-  };
-
-  const togglePayment = (method: string) => {
-    setSelectedPayments((prev) =>
-      prev.includes(method) ? prev.filter((m) => m !== method) : [...prev, method]
-    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -154,19 +119,20 @@ export const AddSpotModal: React.FC<AddSpotModalProps> = ({
 
     const categoryLabels: Record<MapSpotCategory, string> = {
       toilet: 'Туалет',
-      wifi: 'Бесплатный Wi-Fi',
+      wifi: 'Wi-Fi спот',
       outlet: 'Розетки / Учеба',
       deal: 'Скидка Nooki',
-      print: 'Копицентр / Печать',
+      print: 'Печать / Копицентр',
     };
 
     let formattedPrice = 'Бесплатно';
     if (!isFree) {
       if (priceCustomText.trim()) {
         formattedPrice = priceCustomText.trim();
+      } else if (numericPrice) {
+        formattedPrice = `${numericPrice} ₸`;
       } else {
-        const payStr = selectedPayments.length > 0 ? ` (${selectedPayments.join(', ')})` : '';
-        formattedPrice = `${numericPrice} ₸${payStr}`;
+        formattedPrice = 'Платно';
       }
     }
 
@@ -178,643 +144,268 @@ export const AddSpotModal: React.FC<AddSpotModalProps> = ({
       lng: coords.lng,
       address: address.trim() || 'Алматы, точка на карте OpenStreetMap',
       isFree,
-      price: isFree ? 0 : numericPrice,
+      price: isFree ? 0 : Number(numericPrice) || 0,
       priceInfo: formattedPrice,
-      hours: hours.trim(),
-      description:
-        description.trim() ||
-        `${categoryLabels[category]} добавлено через приложение Nooki`,
+      hours: hours.trim() || undefined,
+      description: description.trim() || categoryLabels[category],
       imageUrl: imageUrl.trim() || undefined,
-      wifiSpeed: category === 'wifi' ? wifiSpeed : undefined,
-      wifiPassword: category === 'wifi' ? wifiPassword : undefined,
-      outletCount: category === 'outlet' ? outletCount : undefined,
-      amenities: category === 'toilet' ? selectedAmenities : undefined,
-      paymentMethods: isFree ? ['Бесплатно'] : selectedPayments,
-      tags: ['Добавлено студентом', categoryLabels[category]],
+      tags: ['Добавлено пользователем', categoryLabels[category]],
     });
 
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto animate-fade-in">
-      <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-100 p-5 sm:p-6 my-auto max-h-[92vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md overflow-y-auto animate-fade-in"
+      onClick={onClose}
+    >
+      <div 
+        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 p-5 sm:p-6 my-auto max-h-[92vh] overflow-y-auto flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
               <PlusCircle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-900 text-lg">
+              <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">
                 Добавить точку на карту
               </h3>
               <p className="text-xs text-slate-500">
-                Поделитесь проверенным местом (туалет, Wi-Fi, розетка, фото и цена)
+                Быстрое сохранение проверенного студенческого места
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          {/* 1. Category Selection */}
+        {/* Clean, Lightweight Form Body */}
+        <form onSubmit={handleSubmit} className="space-y-4 pt-3 text-left">
+          
+          {/* 1. Category Chips */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2">
-              1. Выберите категорию объекта *
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Категория места *
             </label>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-              <button
-                type="button"
-                onClick={() => setCategory('toilet')}
-                className={`py-2.5 px-2 rounded-2xl text-xs font-extrabold border transition-all flex flex-col items-center gap-1 ${
-                  category === 'toilet'
-                    ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20 scale-[1.03]'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                <span className="text-xl">🚽</span>
-                <span>Туалет</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCategory('wifi')}
-                className={`py-2.5 px-2 rounded-2xl text-xs font-extrabold border transition-all flex flex-col items-center gap-1 ${
-                  category === 'wifi'
-                    ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-500/20 scale-[1.03]'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                <span className="text-xl">📶</span>
-                <span>Wi-Fi</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCategory('outlet')}
-                className={`py-2.5 px-2 rounded-2xl text-xs font-extrabold border transition-all flex flex-col items-center gap-1 ${
-                  category === 'outlet'
-                    ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-500/20 scale-[1.03]'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                <span className="text-xl">⚡</span>
-                <span>Розетки</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCategory('print')}
-                className={`py-2.5 px-2 rounded-2xl text-xs font-extrabold border transition-all flex flex-col items-center gap-1 ${
-                  category === 'print'
-                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-500/20 scale-[1.03]'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                <span className="text-xl">🖨️</span>
-                <span>Печать</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCategory('deal')}
-                className={`py-2.5 px-2 rounded-2xl text-xs font-extrabold border transition-all flex flex-col items-center gap-1 col-span-2 sm:col-span-1 ${
-                  category === 'deal'
-                    ? 'bg-gradient-to-r from-amber-500 to-rose-500 border-amber-500 text-white shadow-md shadow-amber-500/20 scale-[1.03]'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                <span className="text-xl">🔥</span>
-                <span>Скидка</span>
-              </button>
-            </div>
-          </div>
-
-          {/* 2. Title & Address */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Название места *
-              </label>
-              <input
-                type="text"
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={
-                  category === 'toilet'
-                    ? 'Например: Санузел в ТРЦ Forum 2 эт.'
-                    : category === 'wifi'
-                    ? 'Например: Wi-Fi в читальном зале'
-                    : 'Например: Зона с розетками в холле'
-                }
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-500 outline-hidden transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Адрес / Ориентир
-              </label>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="ул. Сейфуллина, 617 или кампус Политеха"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-500 outline-hidden transition"
-              />
-            </div>
-          </div>
-
-          {/* Location & Coordinates Picker */}
-          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1.5 font-bold text-slate-700">
-                <MapPin className="w-4 h-4 text-blue-600" />
-                <span>
-                  Координаты:{' '}
-                  <span className="font-mono text-blue-700 font-semibold">
-                    {coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : 'Не выбраны'}
-                  </span>
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleGetLocation}
-                disabled={isLocating}
-                className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-2xs transition"
-              >
-                <Crosshair className={`w-3 h-3 ${isLocating ? 'animate-spin' : ''}`} />
-                <span>{isLocating ? 'Поиск...' : 'Мое местоположение'}</span>
-              </button>
-            </div>
-
-            {/* Quick preset locations */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1">
-              <span className="text-[10px] font-bold text-slate-400 shrink-0">Кампусы:</span>
-              {CAMPUS_PRESETS.map((p) => (
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+              {[
+                { id: 'toilet', label: 'Санузел', icon: '🚻' },
+                { id: 'outlet', label: 'Розетки', icon: '⚡' },
+                { id: 'wifi', label: 'Wi-Fi', icon: '📶' },
+                { id: 'print', label: 'Печать', icon: '🖨️' },
+                { id: 'deal', label: 'Скидка', icon: '🔥' },
+              ].map((cat) => (
                 <button
-                  key={p.name}
+                  key={cat.id}
                   type="button"
-                  onClick={() => {
-                    setCoords({ lat: p.lat, lng: p.lng });
-                    if (!address) setAddress(p.address);
-                  }}
-                  className="text-[10px] font-semibold bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-700 px-2 py-0.5 rounded-md border border-slate-200 transition shrink-0"
+                  onClick={() => setCategory(cat.id as MapSpotCategory)}
+                  className={`py-2 px-2 rounded-2xl text-xs font-bold border transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                    category === cat.id
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-sm scale-[1.02]'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                  }`}
                 >
-                  {p.name}
+                  <span className="text-lg">{cat.icon}</span>
+                  <span className="text-[11px] leading-tight">{cat.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* 3. Photo Section (Фотография места) */}
-          <div className="bg-slate-50 rounded-2xl p-3 sm:p-4 border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Camera className="w-4 h-4 text-indigo-600" />
-                <span className="text-xs font-extrabold text-slate-800">
-                  Фотография места (Реалистичное фото)
-                </span>
-              </div>
-
-              {/* Mode switch */}
-              <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200 text-[10px] font-bold">
-                <button
-                  type="button"
-                  onClick={() => setPhotoMode('preset')}
-                  className={`px-2 py-0.5 rounded-md transition ${
-                    photoMode === 'preset' ? 'bg-indigo-600 text-white' : 'text-slate-500'
-                  }`}
-                >
-                  Пресеты
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPhotoMode('upload');
-                    fileInputRef.current?.click();
-                  }}
-                  className={`px-2 py-0.5 rounded-md transition ${
-                    photoMode === 'upload' ? 'bg-indigo-600 text-white' : 'text-slate-500'
-                  }`}
-                >
-                  Загрузить
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPhotoMode('url')}
-                  className={`px-2 py-0.5 rounded-md transition ${
-                    photoMode === 'url' ? 'bg-indigo-600 text-white' : 'text-slate-500'
-                  }`}
-                >
-                  Ссылка
-                </button>
-              </div>
-            </div>
-
-            {/* Hidden file input */}
+          {/* 2. Spot Name (No autofill) */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Название места *
+            </label>
             <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileUpload}
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Например: Санузел в ТРЦ Forum 2 этаж или Коворкинг"
+              className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 outline-hidden transition"
             />
+          </div>
 
-            {/* Presets Gallery */}
-            {photoMode === 'preset' && (
-              <div className="space-y-1.5">
-                <p className="text-[11px] text-slate-500 font-medium">
-                  Выберите подходящее качественное фото в один клик:
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {(PRESET_SPOT_PHOTOS[category] || []).map((preset, idx) => {
-                    const isSelected = imageUrl === preset.url;
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setImageUrl(preset.url)}
-                        className={`group relative rounded-xl overflow-hidden border-2 transition aspect-video text-left ${
-                          isSelected
-                            ? 'border-indigo-600 shadow-md ring-2 ring-indigo-400/30'
-                            : 'border-slate-200 hover:border-slate-300 opacity-80 hover:opacity-100'
-                        }`}
-                      >
-                        <img
-                          src={preset.url}
-                          alt={preset.label}
-                          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-1.5">
-                          <span className="text-[9px] font-bold text-white leading-tight line-clamp-1">
-                            {preset.label}
-                          </span>
-                        </div>
-                        {isSelected && (
-                          <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center">
-                            <Check className="w-2.5 h-2.5" />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+          {/* 3. Address / Landmark */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Адрес или ориентир
+            </label>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="ул. Сейфуллина, 617 или около центрального входа"
+              className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-3.5 py-2 text-xs text-slate-900 outline-hidden transition"
+            />
+          </div>
 
-            {/* Upload Area */}
-            {photoMode === 'upload' && (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="cursor-pointer border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-white rounded-2xl p-4 text-center transition flex flex-col items-center justify-center gap-1.5"
+          {/* 4. Coordinates / Location status */}
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-2.5 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2 text-slate-600 truncate">
+              <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
+              <span className="truncate font-mono">
+                {coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : 'Кликните на карту'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleGetLocation}
+              disabled={isLocating}
+              className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 text-blue-600 rounded-xl font-bold text-[11px] flex items-center gap-1 transition cursor-pointer shrink-0"
+            >
+              <Crosshair className="w-3 h-3" />
+              <span>{isLocating ? 'Ищем...' : 'Где я'}</span>
+            </button>
+          </div>
+
+          {/* 5. Access / Pricing */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Условия доступа
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setIsFree(true)}
+                className={`py-2 px-3 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                  isFree
+                    ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`}
               >
-                <Upload className="w-6 h-6 text-indigo-500" />
-                <p className="text-xs font-bold text-slate-700">
-                  Нажмите, чтобы загрузить фото с устройства
-                </p>
-                <p className="text-[10px] text-slate-400">PNG, JPG, WebP до 4 МБ</p>
-              </div>
-            )}
-
-            {/* URL Input */}
-            {photoMode === 'url' && (
-              <div>
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-..."
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:border-indigo-500 outline-hidden transition"
-                />
-              </div>
-            )}
-
-            {/* Current Image Preview */}
-            {imageUrl && (
-              <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-black/5 flex items-center justify-between p-2">
-                <div className="flex items-center gap-2.5">
-                  <img
-                    src={imageUrl}
-                    alt="Предпросмотр"
-                    className="w-16 h-12 rounded-lg object-cover border border-white shadow-xs shrink-0"
-                  />
-                  <div>
-                    <span className="text-xs font-bold text-slate-800 line-clamp-1">
-                      Фото прикреплено
-                    </span>
-                    <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                      <Check className="w-3 h-3" /> Будет отображаться в карточке
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setImageUrl('')}
-                  className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition"
-                  title="Удалить фото"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* 4. Price Indication (Указание цены) */}
-          <div className="bg-slate-50 rounded-2xl p-3 sm:p-4 border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Coins className="w-4 h-4 text-amber-600" />
-                <span className="text-xs font-extrabold text-slate-800">
-                  Стоимость и условия доступа *
-                </span>
-              </div>
-
-              {/* Free vs Paid Toggle */}
-              <div className="flex items-center gap-1 bg-white p-0.5 rounded-xl border border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setIsFree(true)}
-                  className={`px-3 py-1 rounded-lg text-xs font-extrabold transition ${
-                    isFree
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Бесплатно
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsFree(false)}
-                  className={`px-3 py-1 rounded-lg text-xs font-extrabold transition ${
-                    !isFree
-                      ? 'bg-amber-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Платно (₸)
-                </button>
-              </div>
+                Бесплатно
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsFree(false)}
+                className={`py-2 px-3 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                  !isFree
+                    ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                Платно (₸)
+              </button>
             </div>
 
-            {/* Paid settings */}
             {!isFree && (
-              <div className="space-y-2.5 pt-1">
-                {/* Fast price chips */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[11px] font-bold text-slate-500">Быстрый выбор:</span>
-                  {[50, 100, 150, 200].map((pr) => (
-                    <button
-                      key={pr}
-                      type="button"
-                      onClick={() => {
-                        setNumericPrice(pr);
-                        setPriceCustomText('');
-                      }}
-                      className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition ${
-                        numericPrice === pr && !priceCustomText
-                          ? 'bg-amber-100 border-amber-400 text-amber-900 shadow-2xs'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
-                      }`}
-                    >
-                      {pr} ₸
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPriceCustomText('По чеку в заведении');
-                      setNumericPrice(0);
-                    }}
-                    className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition ${
-                      priceCustomText === 'По чеку в заведении'
-                        ? 'bg-amber-100 border-amber-400 text-amber-900 shadow-2xs'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    По чеку
-                  </button>
-                </div>
-
-                {/* Exact Numeric Price input */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      Цена в тенге (₸)
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        min="0"
-                        step="10"
-                        value={numericPrice || ''}
-                        onChange={(e) => {
-                          setNumericPrice(Number(e.target.value) || 0);
-                          setPriceCustomText('');
-                        }}
-                        placeholder="50"
-                        className="w-full bg-white border border-slate-200 rounded-xl pl-3 pr-8 py-1.5 text-xs text-slate-900 focus:border-amber-500 outline-hidden font-bold"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
-                        ₸
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      Особое условие (опционально)
-                    </label>
-                    <input
-                      type="text"
-                      value={priceCustomText}
-                      onChange={(e) => setPriceCustomText(e.target.value)}
-                      placeholder="Например: 50 ₸ или по чеку кафе"
-                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:border-amber-500 outline-hidden"
-                    />
-                  </div>
-                </div>
-
-                {/* Payment Methods */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                    Способы оплаты:
-                  </label>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {PAYMENT_OPTIONS.map((opt) => {
-                      const isSel = selectedPayments.includes(opt);
-                      return (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => togglePayment(opt)}
-                          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border transition ${
-                            isSel
-                              ? 'bg-amber-500 border-amber-600 text-white'
-                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                          }`}
-                        >
-                          {isSel ? '✓ ' : '+ '}
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 5. Category-Specific Fields */}
-          {category === 'toilet' && (
-            <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 space-y-2">
-              <label className="block text-xs font-bold text-slate-700">
-                Удобства в санузле:
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                {TOILET_AMENITIES.map((am) => {
-                  const active = selectedAmenities.includes(am);
-                  return (
-                    <button
-                      key={am}
-                      type="button"
-                      onClick={() => toggleAmenity(am)}
-                      className={`text-left text-[11px] font-semibold px-2 py-1.5 rounded-xl border transition flex items-center gap-1.5 ${
-                        active
-                          ? 'bg-blue-50 border-blue-400 text-blue-800'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                      }`}
-                    >
-                      <span className="text-xs">{active ? '✓' : '•'}</span>
-                      <span className="truncate">{am}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {category === 'wifi' && (
-            <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  Скорость Wi-Fi
-                </label>
-                <div className="flex items-center gap-1">
-                  {['50 Мбит/с', '100 Мбит/с', '200+ Мбит/с'].map((spd) => (
-                    <button
-                      key={spd}
-                      type="button"
-                      onClick={() => setWifiSpeed(spd)}
-                      className={`flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${
-                        wifiSpeed === spd
-                          ? 'bg-emerald-600 border-emerald-600 text-white'
-                          : 'bg-white border-slate-200 text-slate-600'
-                      }`}
-                    >
-                      {spd}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  Пароль / Доступ
-                </label>
+              <div className="mt-2 flex gap-2 animate-fade-in">
+                <input
+                  type="number"
+                  value={numericPrice}
+                  onChange={(e) => setNumericPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="Цена в ₸ (например, 100)"
+                  className="w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:bg-white focus:border-blue-500 outline-hidden"
+                />
                 <input
                   type="text"
-                  value={wifiPassword}
-                  onChange={(e) => setWifiPassword(e.target.value)}
-                  placeholder="Без пароля или ввести пароль"
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:border-emerald-500 outline-hidden"
+                  value={priceCustomText}
+                  onChange={(e) => setPriceCustomText(e.target.value)}
+                  placeholder="Или условие (по чеку)"
+                  className="w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:bg-white focus:border-blue-500 outline-hidden"
                 />
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {category === 'outlet' && (
-            <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 space-y-2">
-              <label className="block text-[11px] font-bold text-slate-700">
-                Количество и доступность розеток:
-              </label>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {['У каждого стола', '10+ розеток', '5-10 розеток', 'Вдоль стен'].map((cnt) => (
-                  <button
-                    key={cnt}
-                    type="button"
-                    onClick={() => setOutletCount(cnt)}
-                    className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition ${
-                      outletCount === cnt
-                        ? 'bg-purple-600 border-purple-600 text-white'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    {cnt}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 6. Hours & Description */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* 6. Hours & Comment (No autofill) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Часы работы
+                Часы работы (опционально)
               </label>
-              <div className="flex items-center gap-1 mb-1">
-                <button
-                  type="button"
-                  onClick={() => setHours('Круглосуточно (24/7)')}
-                  className="text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md"
-                >
-                  24/7
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setHours('08:00 – 22:00')}
-                  className="text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md"
-                >
-                  08:00 – 22:00
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setHours('10:00 – 22:00')}
-                  className="text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md"
-                >
-                  ТРЦ
-                </button>
-              </div>
               <input
                 type="text"
                 value={hours}
                 onChange={(e) => setHours(e.target.value)}
-                placeholder="08:00 – 22:00"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:bg-white focus:border-blue-500 outline-hidden transition"
+                placeholder="24/7 или 09:00 – 22:00"
+                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 outline-hidden transition"
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Комментарий / Как найти
+                Подсказка как найти
               </label>
-              <textarea
-                rows={2}
+              <input
+                type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Этаж, чистота, код двери, как быстрее пройти..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:bg-white focus:border-blue-500 outline-hidden transition resize-none"
+                placeholder="Этаж, код двери, как пройти..."
+                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 outline-hidden transition"
               />
             </div>
+          </div>
+
+          {/* 7. Optional Photo (clean & collapsed, no forced preset) */}
+          <div className="pt-1">
+            {!showPhotoInput && !imageUrl ? (
+              <button
+                type="button"
+                onClick={() => setShowPhotoInput(true)}
+                className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1.5 cursor-pointer"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>+ Прикрепить фото (по желанию)</span>
+              </button>
+            ) : (
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 animate-fade-in">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                  <span>Фотография места:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageUrl('');
+                      setShowPhotoInput(false);
+                    }}
+                    className="text-slate-400 hover:text-slate-600 text-xs"
+                  >
+                    Скрыть ✕
+                  </button>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="Вставьте ссылку на фото или загрузите файл"
+                    className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 outline-hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl cursor-pointer"
+                  >
+                    Файл
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </div>
+
+                {imageUrl && (
+                  <div className="flex items-center gap-2 pt-1 text-xs text-emerald-700 font-semibold">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Фото прикреплено</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Form Actions */}
@@ -822,18 +413,24 @@ export const AddSpotModal: React.FC<AddSpotModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+              className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
             >
               Отмена
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-extrabold rounded-xl shadow-lg shadow-blue-500/25 active:scale-95 transition flex items-center gap-2"
+              disabled={!title.trim() || !coords}
+              className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 shadow-md ${
+                title.trim() && coords
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25 active:scale-95 cursor-pointer'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              }`}
             >
               <Check className="w-4 h-4" />
-              <span>Сохранить точку на карте</span>
+              <span>Сохранить точку</span>
             </button>
           </div>
+
         </form>
       </div>
     </div>

@@ -48,80 +48,31 @@ export const NookiLogo: React.FC<NookiLogoProps> = ({
         animated ? 'group cursor-pointer' : ''
       } ${className}`}
     >
-      {/* High Fidelity Squircle Icon */}
+      {/* High Fidelity Squircle Icon with Official Nooki Friendly Eyes */}
       <div className="relative shrink-0 flex items-center justify-center">
         <svg
           width={iconSize}
           height={iconSize}
-          viewBox="0 0 100 100"
+          viewBox="0 0 160 160"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`shrink-0 transition-transform duration-300 ease-out ${
-            animated ? 'group-hover:scale-105 group-hover:-translate-y-0.5 shadow-sm' : ''
+          className={`shrink-0 transition-transform duration-300 ease-out rounded-2xl shadow-xs ${
+            animated ? 'group-hover:scale-105 group-hover:-translate-y-0.5' : ''
           }`}
-          style={{
-            filter: 'drop-shadow(0 4px 12px rgba(37, 99, 235, 0.3))',
-          }}
         >
-          <defs>
-            {/* Vibrant Modern Gradient (Deep Blue to Cyan & Indigo) */}
-            <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#38BDF8" />
-              <stop offset="45%" stopColor="#2563EB" />
-              <stop offset="100%" stopColor="#1E1B4B" />
-            </linearGradient>
-
-            {/* Subtle Inner Glow */}
-            <linearGradient id={`${gradId}-inner`} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-            </linearGradient>
-
-            {/* Sparkle Glow */}
-            <linearGradient id={`${gradId}-sparkle`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FDE047" />
-              <stop offset="100%" stopColor="#F59E0B" />
-            </linearGradient>
-          </defs>
-
-          {/* Squircle Base */}
-          <rect
-            x="2"
-            y="2"
-            width="96"
-            height="96"
-            rx="26"
-            fill={`url(#${gradId})`}
-          />
-
-          {/* Top Gloss Highlight */}
-          <rect
-            x="2"
-            y="2"
-            width="96"
-            height="48"
-            rx="26"
-            fill={`url(#${gradId}-inner)`}
-            className="pointer-events-none"
-          />
-
-          {/* Stylized 'N' Beacon / Radar Map Spot */}
-          {/* Left Bar */}
-          <rect x="24" y="26" width="11" height="48" rx="5.5" fill="#FFFFFF" />
-          
-          {/* Right Bar */}
-          <rect x="65" y="26" width="11" height="48" rx="5.5" fill="#FFFFFF" />
-          
-          {/* Diagonal Smart Connection */}
-          <path
-            d="M33 30 L67 70"
-            stroke="#FFFFFF"
-            strokeWidth="11"
-            strokeLinecap="round"
-          />
-
-          {/* Flash / Smart Sparkle dot at top right */}
-          <circle cx="70.5" cy="31.5" r="5" fill={`url(#${gradId}-sparkle)`} />
+          <rect width="160" height="160" rx="38" fill="#176BFF" />
+          <g transform="translate(16 54) scale(.30)">
+            <g fill="none" stroke="#FFFFFF" strokeWidth="30" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M28 137V34l78 103V34" />
+              <circle cx="162" cy="91" r="43" />
+              <circle cx="245" cy="91" r="43" />
+              <circle cx="172" cy="94" r="9" fill="#FFFFFF" stroke="none" />
+              <circle cx="235" cy="94" r="9" fill="#FFFFFF" stroke="none" />
+              <path d="M307 34v103M307 96l55-49M326 79l45 58" />
+              <path d="M405 63v74" />
+              <circle cx="405" cy="31" r="15" fill="#FFFFFF" stroke="none" />
+            </g>
+          </g>
         </svg>
       </div>
 
@@ -129,10 +80,7 @@ export const NookiLogo: React.FC<NookiLogoProps> = ({
       {showText && layout !== 'icon-only' && (
         <div className="flex items-center tracking-tight select-none">
           <span className={`${textSizeClasses} ${primaryTextColor} font-black tracking-tight`}>
-            nooki
-          </span>
-          <span className={`${textSizeClasses} ${brandAccentColor} font-black ml-0.5`}>
-            .
+            Nooki
           </span>
         </div>
       )}

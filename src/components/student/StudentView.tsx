@@ -8,7 +8,7 @@ import {
   Clock, 
   ChevronDown, 
   CheckCircle2, 
-  QrCode, 
+  KeyRound, 
   Coffee, 
   Utensils, 
   Printer, 
@@ -30,7 +30,6 @@ import {
   Scissors,
   Users
 } from 'lucide-react';
-import { QrModal } from './QrModal';
 
 const CATEGORIES: { id: Category; label: string; icon: React.ReactNode }[] = [
   { id: 'all', label: 'Все слоты', icon: <Layers className="w-3.5 h-3.5" /> },
@@ -135,128 +134,117 @@ export const StudentView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 transition-all duration-300">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-8 transition-all duration-300">
       
-      {/* 1. Hero & Header Banner */}
-      <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8 animate-fade-in">
-        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-          Тихие часы & Смарт-слоты Nooki
-        </h1>
-        
-        <p className="mt-2.5 sm:mt-3 text-xs sm:text-base text-slate-600 leading-relaxed font-normal px-2">
-          Фиксированные скидки и комбо до <strong className="text-blue-600 font-bold">-50%</strong> на обеды, кофе, спорт и бьюти в «тихие часы» заведений + карта городской инфраструктуры.
-        </p>
+      {/* 1. Hero Banner: Kangaroo Mascot with Content Overlay */}
+      <div className="relative mb-8 sm:mb-12 rounded-[32px] sm:rounded-[44px] overflow-hidden border border-slate-200/90 shadow-[0_8px_30px_rgb(0,0,0,0.06)] min-h-[360px] sm:min-h-[440px] lg:min-h-[480px] flex flex-col justify-center items-center py-10 sm:py-16 px-4 sm:px-8">
+        {/* Background Mascot Image */}
+        <img
+          src="/Kangaroo_mascot_wearing_sunglasses_20260929171723.jpg"
+          alt="Nooki — Скидки в тихие часы"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="eager"
+        />
+
+        {/* Balanced Cinematic Overlay (Moderate contrast for crisp text readability while preserving mascot colors) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-slate-950/35 to-slate-950/45" />
+
+        {/* Content Elements Layer (Внутренний уровень сверху плашки) */}
+        <div className="relative z-10 text-center max-w-4xl mx-auto flex flex-col items-center">
+          {/* Clean Hero Headline */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight text-center leading-[1.12] drop-shadow-md">
+            Скидки в тихие часы
+          </h1>
+
+          {/* Subtitle */}
+          <p className="mt-3.5 sm:mt-5 text-sm sm:text-base lg:text-lg text-white/95 text-center max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-sm">
+            Заведения Алматы открывают свободные столы и смарт-слоты со скидкой до 50%. Забирайте 4-значный PIN за 3 секунды без сложной регистрации.
+          </p>
+
+          {/* Action Button (Pleasant Blue text, friendly white pill) */}
+          <div className="mt-6 sm:mt-8">
+            <a
+              href="#catalog-offers"
+              className="px-8 py-3.5 rounded-full bg-white hover:bg-blue-50/90 text-[#2563eb] font-extrabold text-sm sm:text-base shadow-lg hover:shadow-2xl transition-all duration-200 active:scale-95 cursor-pointer inline-flex items-center gap-2"
+            >
+              <span>Выбрать заведение</span>
+            </a>
+          </div>
+        </div>
       </div>
 
-      {/* 2. Compact Search & Filter Controls Bar */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-slate-200/90 shadow-sm mb-6 sm:mb-8 space-y-3 sm:space-y-4">
+      {/* 2. Search & Category Bar */}
+      <div id="catalog-offers" className="bg-white rounded-3xl p-3 sm:p-5 border border-slate-200/90 shadow-sm mb-6 sm:mb-8 space-y-3 sm:space-y-4 scroll-mt-24">
         
-        {/* Top Controls Row: Search Input + Cluster + Sort */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-2 sm:gap-3">
+        {/* Top Search and Sort */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
           
           {/* Search bar */}
-          <div className="sm:col-span-2 md:col-span-6 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="sm:col-span-8 lg:col-span-9 relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск заведения, капучино, донера, печати..."
-              className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-xs sm:text-sm text-slate-900 pl-10 pr-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 focus:border-blue-600 outline-hidden transition"
+              placeholder="Поиск заведения, ланча, донера, кофе, зала, копицентра..."
+              className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-xs sm:text-sm text-slate-900 pl-11 pr-8 py-2.5 sm:py-3 rounded-2xl border border-slate-200 focus:border-blue-600 outline-hidden transition"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
               >
                 ✕
               </button>
             )}
           </div>
 
-          {/* Cluster Dropdown */}
-          <div className="sm:col-span-1 md:col-span-4 relative">
-            <button
-              onClick={() => {
-                setClusterDropdownOpen(!clusterDropdownOpen);
-                setSortDropdownOpen(false);
-              }}
-              className="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100/80 border border-slate-200 text-slate-800 px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold transition"
-            >
-              <div className="flex items-center gap-2 truncate">
-                <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
-                <span className="truncate">{selectedCluster}</span>
-              </div>
-              <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${clusterDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {clusterDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 overflow-hidden py-1">
-                {CLUSTERS.map((cl) => (
-                  <button
-                    key={cl}
-                    onClick={() => {
-                      setSelectedCluster(cl);
-                      setClusterDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between transition ${
-                      selectedCluster === cl ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="truncate">{cl}</span>
-                    {selectedCluster === cl && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 ml-1" />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Sorting Dropdown */}
-          <div className="sm:col-span-1 md:col-span-2 relative">
+          <div className="sm:col-span-4 lg:col-span-3 relative">
             <button
               onClick={() => {
                 setSortDropdownOpen(!sortDropdownOpen);
                 setClusterDropdownOpen(false);
               }}
-              className="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100/80 border border-slate-200 text-slate-800 px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold transition"
+              className="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100/80 border border-slate-200 text-slate-800 px-4 py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm font-semibold transition"
             >
-              <div className="flex items-center gap-1.5 truncate">
-                <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              <div className="flex items-center gap-2 truncate">
+                <ArrowUpDown className="w-4 h-4 text-blue-600 shrink-0" />
                 <span className="truncate">
-                  {sortBy === 'popular' && 'Популярные'}
+                  {sortBy === 'popular' && 'По популярности'}
                   {sortBy === 'discount' && 'Скидка %'}
                   {sortBy === 'expiring' && 'Таймер'}
-                  {sortBy === 'distance' && 'Близко'}
+                  {sortBy === 'distance' && 'Ближайшие'}
                 </span>
               </div>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {sortDropdownOpen && (
-              <div className="absolute top-full right-0 w-44 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 overflow-hidden py-1">
+              <div className="absolute top-full right-0 left-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 overflow-hidden py-1">
                 <button
                   onClick={() => { setSortBy('popular'); setSortDropdownOpen(false); }}
-                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between ${sortBy === 'popular' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between ${sortBy === 'popular' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
                 >
-                  <span>По популярности</span>
+                  <span>🔥 По популярности</span>
                 </button>
                 <button
                   onClick={() => { setSortBy('discount'); setSortDropdownOpen(false); }}
-                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between ${sortBy === 'discount' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between ${sortBy === 'discount' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
                 >
-                  <span>Макс. скидка %</span>
+                  <span>🏷️ Макс. скидка %</span>
                 </button>
                 <button
                   onClick={() => { setSortBy('expiring'); setSortDropdownOpen(false); }}
-                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between ${sortBy === 'expiring' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between ${sortBy === 'expiring' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
                 >
-                  <span>Скоро закончатся</span>
+                  <span>⏳ Скоро закончатся</span>
                 </button>
                 <button
                   onClick={() => { setSortBy('distance'); setSortDropdownOpen(false); }}
-                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between ${sortBy === 'distance' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between ${sortBy === 'distance' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
                 >
-                  <span>Ближайшие к кампусу</span>
+                  <span>📍 Ближайшие к кампусу</span>
                 </button>
               </div>
             )}
@@ -265,14 +253,14 @@ export const StudentView: React.FC = () => {
         </div>
 
         {/* Category Pills Row */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pt-1 pb-0.5">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 shrink-0 ${
+                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 shrink-0 ${
                   isSelected
                     ? 'bg-blue-600 text-white shadow-xs scale-[1.02]'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
@@ -287,8 +275,8 @@ export const StudentView: React.FC = () => {
 
       </div>
 
-      {/* 3. Cards Grid (3 columns on Laptop / Desktop like screenshot 2) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* 3. Cards Grid (4 columns on desktop & laptops) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
         {filteredOffers.map((offer: VenueOffer) => {
           const isDisabled = !offer.happyHoursActive;
 
@@ -311,76 +299,38 @@ export const StudentView: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
 
-                {/* Top Overlay Badges */}
-                <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
-                  
-                  {/* Left status badge */}
-                  {offer.happyHoursActive ? (
-                    <div className="flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md text-emerald-400 px-2.5 py-1 rounded-full text-[11px] font-bold border border-emerald-500/30 shadow-xs">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>LIVE Акция</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-md text-slate-300 px-2.5 py-1 rounded-full text-[11px] font-medium border border-slate-700">
-                      <span>⏸ На паузе</span>
-                    </div>
-                  )}
-
-                  {/* Right distance badge */}
-                  <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[11px] font-semibold border border-white/10 shadow-xs">
-                    <MapPin className="w-3 h-3 text-blue-400" />
-                    <span>{offer.distance}</span>
-                  </div>
-                </div>
-
                 {/* Bottom Left Discount Chip */}
                 <div className="absolute bottom-3 left-3 flex items-center gap-2">
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-sm px-3 py-1 rounded-xl shadow-md flex items-center gap-1 border border-white/20">
                     <Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
                     <span>-{offer.discountPercent}%</span>
                   </div>
-                  <span className="text-[11px] text-white/90 font-medium bg-black/40 backdrop-blur-xs px-2 py-0.5 rounded-lg border border-white/10">
+                  <span className="text-xs text-white/90 font-medium bg-black/40 backdrop-blur-xs px-2 py-0.5 rounded-lg border border-white/10">
                     {offer.categoryLabel}
                   </span>
                 </div>
               </div>
 
               {/* Card Body */}
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-3.5">
+              <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
                 
                 <div className="space-y-2.5">
                   {/* Category & Live Timer Row */}
                   <div className="flex items-center justify-between text-xs text-slate-500">
                     <div className="flex items-center gap-1.5 font-bold text-slate-800">
                       {getCategoryIcon(offer.category)}
-                      <span className="text-slate-900">{offer.name}</span>
+                      <span className="text-slate-900 text-sm">{offer.name}</span>
                     </div>
 
                     {offer.happyHoursActive ? (
-                      <div className="flex items-center gap-1 text-amber-600 font-mono font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 text-[11px]">
+                      <div className="flex items-center gap-1 text-amber-600 font-mono font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 text-xs">
                         <Clock className="w-3 h-3 text-amber-600" />
                         <span>{formatTime(offer.remainingSeconds)}</span>
                       </div>
                     ) : (
-                      <span className="text-[11px] text-slate-400 font-medium">Спад окончен</span>
+                      <span className="text-xs text-slate-400 font-medium">Спад окончен</span>
                     )}
                   </div>
-
-                  {/* Slot Counter Callout */}
-                  {offer.slotsRemaining && offer.totalSlots && (
-                    <div className="bg-amber-50/80 border border-amber-200/90 rounded-xl px-2.5 py-1.5 flex items-center justify-between text-xs shadow-2xs">
-                      <span className="text-[11px] font-bold text-amber-900 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                        <span>Осталось {offer.slotsRemaining} из {offer.totalSlots} слотов</span>
-                      </span>
-                      <div className="w-16 bg-amber-200/90 rounded-full h-1.5 overflow-hidden shrink-0">
-                        <div 
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500" 
-                          style={{ width: `${(offer.slotsRemaining / offer.totalSlots) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
 
                   {/* Main Offer Title */}
                   <h3 className="font-extrabold text-base text-slate-900 leading-snug group-hover:text-blue-600 transition">
@@ -388,13 +338,13 @@ export const StudentView: React.FC = () => {
                   </h3>
 
                   {/* Description Snippet */}
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                     {offer.description}
                   </p>
 
                   {/* Social / Group Discount Badge */}
                   {offer.groupDiscountText && (
-                    <div className="text-[11px] text-indigo-800 bg-indigo-50/90 font-medium px-2.5 py-1.5 rounded-xl border border-indigo-200/80 flex items-center gap-1.5">
+                    <div className="text-xs text-indigo-800 bg-indigo-50/90 font-medium px-3 py-1.5 rounded-xl border border-indigo-200/80 flex items-center gap-1.5">
                       <Users className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                       <span>{offer.groupDiscountText}</span>
                     </div>
@@ -402,31 +352,18 @@ export const StudentView: React.FC = () => {
                   
                   {/* Address & Quick Links */}
                   <div className="space-y-1.5 pt-1">
-                    <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                    <p className="text-xs text-slate-500 flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                       <span className="font-medium text-slate-700">{offer.address}</span>
                     </p>
 
-                    {/* Interactive partner badges (quiet hours, website, yandex maps, instagram, phone) */}
+                    {/* Interactive partner badges */}
                     <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                       {offer.quietHoursWindow && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                           <Clock className="w-2.5 h-2.5 text-slate-500" />
                           <span>{offer.quietHoursWindow}</span>
                         </span>
-                      )}
-
-                      {offer.website && (
-                        <a
-                          href={offer.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-md border border-blue-200/80 transition"
-                        >
-                          <Globe className="w-2.5 h-2.5" />
-                          <span>{offer.website.replace('https://', '')}</span>
-                          <ExternalLink className="w-2.5 h-2.5 opacity-60" />
-                        </a>
                       )}
 
                       {offer.mapUrl && (
@@ -454,16 +391,6 @@ export const StudentView: React.FC = () => {
                           <ExternalLink className="w-2.5 h-2.5 opacity-60" />
                         </a>
                       )}
-
-                      {offer.phone && (
-                        <a
-                          href={`tel:${offer.phone.replace(/[^0-9+]/g, '')}`}
-                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-md border border-slate-200 transition"
-                        >
-                          <Phone className="w-2.5 h-2.5 text-slate-500" />
-                          <span>{offer.phone}</span>
-                        </a>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -471,25 +398,26 @@ export const StudentView: React.FC = () => {
                 {/* Bottom Pricing & CTA Button */}
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
                   <div>
-                    <span className="text-[10px] text-slate-400 line-through block leading-tight">
+                    <span className="text-xs text-slate-400 line-through block leading-tight font-medium">
                       {offer.originalPrice.toLocaleString()} ₸
                     </span>
-                    <span className="text-lg font-black text-blue-600 leading-none">
+                    <span className="text-xl font-black text-slate-900 leading-none">
                       {offer.discountedPrice.toLocaleString()} ₸
                     </span>
                   </div>
 
                   <button
+                    type="button"
                     disabled={!offer.happyHoursActive}
                     onClick={() => openQrModal(offer)}
-                    className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs ${
+                    className={`py-2.5 px-4 rounded-xl font-black text-xs sm:text-sm flex items-center gap-1.5 transition-all duration-200 shadow-sm cursor-pointer ${
                       offer.happyHoursActive
-                        ? 'bg-blue-600 hover:bg-blue-700 active:scale-95 text-white shadow-blue-500/25'
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white shadow-blue-500/25'
                         : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     }`}
                   >
-                    <QrCode className="w-3.5 h-3.5" />
-                    <span>{offer.happyHoursActive ? 'Забрать скидку' : 'Недоступно'}</span>
+                    <KeyRound className="w-4 h-4" />
+                    <span>{offer.happyHoursActive ? 'Забрать PIN' : 'На паузе'}</span>
                   </button>
                 </div>
 
@@ -507,15 +435,12 @@ export const StudentView: React.FC = () => {
           <p className="text-xs text-slate-500 mt-1">Попробуйте изменить категорию или поисковый запрос</p>
           <button
             onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl"
+            className="mt-4 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl cursor-pointer"
           >
             Сбросить фильтры
           </button>
         </div>
       )}
-
-      {/* QR Modal Pop-up */}
-      <QrModal />
 
     </div>
   );

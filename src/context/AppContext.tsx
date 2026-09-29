@@ -128,31 +128,6 @@ const INITIAL_OFFERS: VenueOffer[] = [
     badge: 'Манаса, 51 • Подарок к блюду',
   },
   {
-    id: 'barber-lab-almaty',
-    name: 'Nooki Beauty & Barber Lab',
-    category: 'beauty',
-    categoryLabel: 'Бьюти и уход',
-    address: 'пр. Абая, 68',
-    distance: '300 м от метро Театр Ауэзова',
-    cluster: 'Кластер Сатпаева — Байтурсынова',
-    title: 'Мужская стрижка / уход со скидкой 40% в дневное окно',
-    description: 'Стрижка у топ-мастера, мытье головы и укладка со скидкой 40% в утренние и дневные часы с 11:00 до 15:00.',
-    originalPrice: 4000,
-    discountedPrice: 2400,
-    discountPercent: 40,
-    happyHoursActive: true,
-    happyHoursEnd: '15:00',
-    quietHoursWindow: '11:00 – 15:00',
-    remainingSeconds: 4200,
-    slotsRemaining: 3,
-    totalSlots: 6,
-    image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
-    iconName: 'Sparkles',
-    isControlledByCashier: false,
-    phone: '+7 705 333 9922',
-    badge: 'Скидка 40% до 15:00',
-  },
-  {
     id: 'smart-service',
     name: 'Smart Service',
     category: 'service',
@@ -440,7 +415,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return () => clearInterval(timer);
   }, []);
 
-  // 30s countdown for active student QR code
+  // 300s (5-min) countdown for active student PIN/QR code
   useEffect(() => {
     let qrTimer: NodeJS.Timeout;
     if (activeStudentCode && codeTimeRemaining > 0) {
@@ -460,7 +435,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const generateRandomCode = () => {
     const num = Math.floor(1000 + Math.random() * 9000);
-    return `ST-${num}`;
+    return `${num}`;
   };
 
   const openQrModal = (offer: VenueOffer) => {
@@ -473,18 +448,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       finalPrice: offer.discountedPrice,
       originalPrice: offer.originalPrice,
       createdAt: Date.now(),
-      expiresInSeconds: 30,
+      expiresInSeconds: 300,
       studentName: 'Алихан Сейткали',
       studentUni: 'КазНУ им. аль-Фараби',
       isValid: true,
     };
     setActiveStudentCode(newCode);
-    setCodeTimeRemaining(30);
+    setCodeTimeRemaining(300);
     trackEvent('pin_generated', {
       venueId: offer.id,
       offerId: offer.id,
       amount: offer.discountedPrice,
-      metadata: { venueName: offer.name, discountPercent: offer.discountPercent },
+      metadata: { venueName: offer.name, discountPercent: offer.discountPercent, pin: newCode.code },
     });
   };
 
@@ -502,13 +477,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       finalPrice: activeOfferForQr.discountedPrice,
       originalPrice: activeOfferForQr.originalPrice,
       createdAt: Date.now(),
-      expiresInSeconds: 30,
+      expiresInSeconds: 300,
       studentName: 'Алихан Сейткали',
       studentUni: 'КазНУ им. аль-Фараби',
       isValid: true,
     };
     setActiveStudentCode(newCode);
-    setCodeTimeRemaining(30);
+    setCodeTimeRemaining(300);
   };
 
   const toggleUrboHappyHours = () => {
@@ -516,27 +491,31 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const validateCode = (codeToValidate: string) => {
-    const trimmed = codeToValidate.trim().toUpperCase();
-    if (!trimmed) {
-      const res = { success: false, message: 'Пожалуйста, введите код студента (например, ST-4821)' };
+    const raw = codeToValidate.trim().toUpperCase();
+    const cleanDigits = raw.replace(/[^0-9]/g, '');
+    if (!raw) {
+      const res = { success: false, message: 'Пожалуйста, введите 4-значный PIN код студента' };
       setLastValidatedCode(res);
       return res;
     }
 
     let matchedCodeData: StudentCode;
 
-    if (activeStudentCode && activeStudentCode.code === trimmed) {
+    const currentCodeRaw = activeStudentCode?.code || '';
+    const currentCodeClean = currentCodeRaw.replace(/[^0-9]/g, '');
+
+    if (activeStudentCode && (raw === currentCodeRaw || (cleanDigits && cleanDigits === currentCodeClean))) {
       matchedCodeData = activeStudentCode;
     } else {
       matchedCodeData = {
-        code: trimmed,
+        code: cleanDigits.slice(0, 4) || raw,
         venueId: 'coffeemoon-cafe',
         venueName: 'Coffee Moon — Cafe & Wine',
         discountPercent: 40,
         finalPrice: 1600,
         originalPrice: 2800,
         createdAt: Date.now(),
-        expiresInSeconds: 30,
+        expiresInSeconds: 300,
         studentName: 'Алихан Сейткали',
         studentUni: 'КазНУ им. аль-Фараби',
         isValid: true,

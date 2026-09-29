@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   title: 'Nooki — Смарт-доступ к непиковым слотам & Карта города',
   description: 'Nooki — единый городской сервис смарт-доступа к непиковым слотам заведений со скидками и бесплатная карта городской инфраструктуры.',
   icons: {
-    icon: '/icon.svg',
-    shortcut: '/icon.svg',
-    apple: '/icon.svg',
+    icon: '/icon.svg?v=2',
+    shortcut: '/icon.svg?v=2',
+    apple: '/icon.svg?v=2',
   },
 };
 
