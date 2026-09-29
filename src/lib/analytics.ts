@@ -63,7 +63,7 @@ export function getUserDisplayName(): string {
   return 'Горожанин';
 }
 
-async function sendToAnalyticsApi(type: 'event' | 'redemption' | 'feedback', payload: Record<string, unknown>) {
+async function sendToAnalyticsApi(type: 'event' | 'redemption' | 'feedback' | 'spot', payload: Record<string, unknown>) {
   try {
     await fetch('/api/analytics', {
       method: 'POST',
