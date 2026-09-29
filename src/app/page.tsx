@@ -37,7 +37,10 @@ function AppContent() {
         )}
       </main>
 
-      <footer className="py-6 border-t border-slate-200/80 bg-white text-center text-xs text-slate-500">
+      {/* Footer: hidden on mobile when Map is active for clean viewport */}
+      <footer className={`py-6 border-t border-slate-200/80 bg-white text-center text-xs text-slate-500 ${
+        role === 'student' && studentTab === 'map' ? 'hidden sm:block' : 'block'
+      }`}>
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2 font-semibold text-slate-700">
             <NookiLogo size="xs" layout="horizontal" animated={false} />
