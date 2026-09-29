@@ -6,12 +6,9 @@ import {
   X, 
   Clock, 
   RefreshCw, 
-  ArrowRight, 
   ShieldCheck, 
-  Sparkles, 
   MapPin, 
   Copy, 
-  KeyRound,
   Check
 } from 'lucide-react';
 import { NookiLogo } from '../NookiLogo';
@@ -23,7 +20,6 @@ export const QrModal: React.FC = () => {
     closeQrModal,
     generateNewCode,
     codeTimeRemaining,
-    setRole,
   } = useApp();
 
   const [copied, setCopied] = useState(false);
@@ -50,7 +46,7 @@ export const QrModal: React.FC = () => {
   const seconds = codeTimeRemaining % 60;
   const timeFormatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-  // Extract digits for PIN boxes
+  // Extract digits for PIN
   const pinDigits = (activeStudentCode.code.replace(/[^0-9]/g, '') || '7492').slice(0, 4).padEnd(4, '0').split('');
   const cleanPin = pinDigits.join('');
 
@@ -62,11 +58,6 @@ export const QrModal: React.FC = () => {
     } catch {
       // ignore
     }
-  };
-
-  const handleDemoToCashier = () => {
-    closeQrModal();
-    setRole('cashier');
   };
 
   return (
@@ -90,9 +81,6 @@ export const QrModal: React.FC = () => {
 
           <div className="flex items-center gap-2 mb-2">
             <NookiLogo size="xs" textColor="white" layout="horizontal" animated={false} />
-            <span className="bg-blue-500/20 text-blue-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-blue-400/30">
-              Смарт-доступ
-            </span>
           </div>
 
           <h3 className="text-xl font-black text-white">{activeOfferForQr.name}</h3>
@@ -127,16 +115,11 @@ export const QrModal: React.FC = () => {
               <span>Назовите этот 4-значный PIN кассиру:</span>
             </div>
 
-            {/* 4 Digit Boxes */}
-            <div className="flex items-center justify-center gap-2.5 sm:gap-3 py-1">
-              {pinDigits.map((digit, idx) => (
-                <div
-                  key={idx}
-                  className="w-13 h-16 sm:w-14 sm:h-18 bg-slate-800/90 border-2 border-blue-500/40 rounded-2xl flex items-center justify-center font-mono font-black text-3xl sm:text-4xl text-white shadow-lg tracking-tight"
-                >
-                  {digit}
-                </div>
-              ))}
+            {/* Clean PIN Code Display without capsule boxes */}
+            <div className="py-2.5 flex items-center justify-center">
+              <span className="font-mono font-black text-5xl sm:text-6xl text-white tracking-[0.25em] pl-[0.25em]">
+                {cleanPin}
+              </span>
             </div>
 
             {/* Full code string and Copy action */}
@@ -199,16 +182,6 @@ export const QrModal: React.FC = () => {
               </a>
             )}
           </div>
-
-          {/* Quick Demo: Verify on Cashier */}
-          <button
-            onClick={handleDemoToCashier}
-            className="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition shadow-md cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Демо: Проверить на терминале кассира</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
 
         </div>
       </div>
