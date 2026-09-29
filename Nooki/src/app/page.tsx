@@ -1,0 +1,62 @@
+'use client';
+
+import React, { useEffect } from 'react';
+import { AppProvider, useApp } from '@/context/AppContext';
+import { Header } from '@/components/Header';
+import { StudentView } from '@/components/student/StudentView';
+import { CashierView } from '@/components/cashier/CashierView';
+import { UnifiedCityMap } from '@/components/map/UnifiedCityMap';
+import { NookiLogo } from '@/components/NookiLogo';
+import { Heart } from 'lucide-react';
+import { trackEvent } from '@/lib/analytics';
+
+function AppContent() {
+  const { role, studentTab } = useApp();
+
+  useEffect(() => {
+    trackEvent('app_open', {
+      metadata: {
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      },
+    });
+  }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-50 w-full max-w-full overflow-x-hidden">
+      <Header />
+      
+      <main className="flex-1 w-full max-w-full">
+        {role === 'student' ? (
+          studentTab === 'offers' ? <StudentView /> : <UnifiedCityMap />
+        ) : (
+          <CashierView />
+        )}
+      </main>
+
+      <footer className="py-6 border-t border-slate-200/80 bg-white text-center text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-2 font-semibold text-slate-700">
+            <NookiLogo size="xs" layout="horizontal" animated={false} />
+            <span className="text-slate-400 font-normal">• Городской сервис</span>
+          </div>
+          <p className="text-slate-400">
+            Смарт-доступ к непиковым слотам & Карта инфраструктуры города
+          </p>
+          <div className="flex items-center gap-1 text-slate-400">
+            <span>Сделано с заботой</span>
+            <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+            <span>о горожанах</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
+  );
+}

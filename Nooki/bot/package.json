@@ -1,0 +1,22 @@
+{
+  "name": "nooki-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram WebApp Bot for Nooki (https://stud-city.vercel.app/)",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "setup": "node setup-bot.js"
+  },
+  "keywords": [
+    "nooki",
+    "telegram-bot",
+    "telegram-webapp",
+    "quiet-hours",
+    "city-map"
+  ],
+  "author": "Nooki Team",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.3.1"
+  }
+}
