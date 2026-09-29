@@ -107,82 +107,38 @@ export const CashierView: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Smart Yield Control Banner (Refined, Modern) */}
-      <div className={`rounded-3xl p-5 sm:p-6 border transition-all duration-300 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-        urboHappyHoursActive 
-          ? 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-slate-800'
-          : 'bg-slate-100 text-slate-700 border-slate-200'
-      }`}>
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-              urboHappyHoursActive ? 'bg-blue-500/20 text-blue-300 border border-blue-400/30' : 'bg-slate-200 text-slate-600'
-            }`}>
-              Динамический поток
-            </span>
-            <span className={`flex items-center gap-1 text-xs font-semibold ${urboHappyHoursActive ? 'text-slate-300' : 'text-slate-500'}`}>
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Студенческий тариф в непиковые часы
-            </span>
-          </div>
-
-          <h2 className="text-lg sm:text-xl font-black tracking-tight">
-            {urboHappyHoursActive ? 'Скидка 40% активна для гостей Nooki' : 'Скидка временно отключена'}
-          </h2>
-
-          <p className="text-xs opacity-80 max-w-2xl">
-            {urboHappyHoursActive
-              ? 'Заведение принимает 4-значные PIN-коды со скидкой 40% до 17:00. Гости приходят в свободное от очередей время.'
-              : 'Поток гостей приостановлен. Включите, когда зал пустует, чтобы привлечь студентов.'}
-          </p>
-        </div>
-
-        {/* Toggle Button */}
-        <button
-          onClick={toggleUrboHappyHours}
-          className={`px-5 py-3 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 cursor-pointer shrink-0 ${
-            urboHappyHoursActive
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-emerald-500/25'
-              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/25'
-          }`}
-        >
-          <Power className="w-4 h-4" />
-          <span>{urboHappyHoursActive ? 'Акция ВКЛЮЧЕНА' : 'ВКЛЮЧИТЬ АКЦИЮ'}</span>
-        </button>
-      </div>
-
-      {/* 3. Main Split Section: Code Validator & Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* 2. Main 3-Column Section: PIN Validator, Express Analytics & Nooki Discount Control */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         
-        {/* Left Column (7 cols): POS PIN Validator */}
-        <div className="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold border border-blue-100">
-                <Receipt className="w-5 h-5" />
+        {/* Column 1: POS PIN Validator */}
+        <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-5">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold border border-blue-100 shrink-0">
+                  <Receipt className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base sm:text-lg text-slate-900 leading-tight">
+                    Валидатор PIN-кода
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Введите 4 цифры, которые назвал студент на кассе
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-extrabold text-base sm:text-lg text-slate-900">
-                  Валидатор PIN-кода
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Введите 4 цифры, которые назвал студент на кассе
-                </p>
-              </div>
+
+              <span className="text-[11px] bg-emerald-50 text-emerald-700 font-bold px-3 py-1 rounded-full border border-emerald-200 shrink-0 whitespace-nowrap">
+                Терминал готов
+              </span>
             </div>
 
-            <span className="text-[11px] bg-emerald-50 text-emerald-700 font-bold px-3 py-1 rounded-full border border-emerald-200">
-              Терминал готов
-            </span>
-          </div>
-
-          {/* Input Controls */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2">
-                4-значный PIN покупателя:
-              </label>
-              <div className="flex items-center gap-3">
+            {/* Input Controls */}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  4-значный PIN покупателя:
+                </label>
                 <input
                   type="text"
                   value={inputCode}
@@ -195,170 +151,178 @@ export const CashierView: React.FC = () => {
                   }}
                   placeholder="7492"
                   maxLength={7}
-                  className="flex-1 bg-slate-50 border-2 border-slate-200 focus:border-blue-600 focus:bg-white rounded-2xl px-5 py-3.5 font-mono font-black text-2xl text-slate-900 tracking-widest text-center transition outline-hidden"
+                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-blue-600 focus:bg-white rounded-2xl px-4 py-3 font-mono font-black text-2xl text-slate-900 tracking-widest text-center transition outline-hidden"
                 />
-
-                <button
-                  onClick={handleValidate}
-                  className="px-6 sm:px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-blue-500/25 transition cursor-pointer flex items-center gap-2"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Проверить</span>
-                </button>
               </div>
-            </div>
 
-            {/* Quick Helper for Demo */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-              {activeStudentCode && (
-                <button
-                  onClick={handleUseCurrentStudentCode}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition cursor-pointer border border-blue-100"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Вставить активный PIN ({activeStudentCode.code})</span>
-                </button>
+              <button
+                onClick={handleValidate}
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-blue-500/20 transition cursor-pointer flex items-center justify-center gap-2 shrink-0"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Проверить</span>
+              </button>
+
+              {/* Quick Helper for Demo */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5 text-xs">
+                {activeStudentCode ? (
+                  <button
+                    onClick={handleUseCurrentStudentCode}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition cursor-pointer border border-blue-100"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Вставить PIN ({activeStudentCode.code})</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setInputCode('7492')}
+                    className="text-xs text-slate-600 hover:text-blue-600 font-bold flex items-center gap-1.5 bg-slate-100 hover:bg-blue-50 px-2.5 py-1.5 rounded-xl transition cursor-pointer border border-slate-200/70"
+                  >
+                    <span>Тестовый PIN: 7492</span>
+                  </button>
+                )}
+
+                <span className="text-[11px] text-slate-400">
+                  Проверка занимает ~3 сек
+                </span>
+              </div>
+
+              {validationError && (
+                <p className="text-xs font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl border border-red-200">
+                  {validationError}
+                </p>
               )}
-
-              <span className="text-[11px] text-slate-400">
-                Проверка занимает ~3 сек
-              </span>
             </div>
 
-            {validationError && (
-              <p className="text-xs font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl border border-red-200">
-                {validationError}
-              </p>
+            {/* Validation Result Box */}
+            {lastValidatedCode && (
+              <div className={`p-4 rounded-2xl border-2 transition-all animate-scale-up ${
+                lastValidatedCode.success 
+                  ? 'bg-emerald-50/90 border-emerald-500 text-emerald-950' 
+                  : 'bg-red-50 border-red-400 text-red-950'
+              }`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 ${
+                      lastValidatedCode.success ? 'bg-emerald-600 shadow-sm' : 'bg-red-600'
+                    }`}>
+                      <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
+                        {lastValidatedCode.success ? `PIN ${lastValidatedCode.codeData?.code || inputCode} подтвержден!` : 'Ошибка проверки PIN'}
+                      </h4>
+                      <p className={`text-xs mt-0.5 font-medium ${lastValidatedCode.success ? 'text-emerald-700' : 'text-red-700'}`}>
+                        {lastValidatedCode.message}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={clearLastValidation}
+                    className="text-xs font-bold text-slate-400 hover:text-slate-700 px-2 py-1 rounded-lg hover:bg-white transition cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {lastValidatedCode.codeData && (
+                  <div className="mt-3 pt-3 border-t border-emerald-200/80 grid grid-cols-2 gap-2.5 text-xs">
+                    <div>
+                      <span className="text-slate-500 block text-[10px] font-medium">Студент:</span>
+                      <strong className="text-slate-900 font-bold block truncate">{lastValidatedCode.codeData.studentName || 'Алихан С.'}</strong>
+                      <span className="text-[10px] text-slate-500 truncate block">{lastValidatedCode.codeData.studentUni || 'КазНУ'}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px] font-medium">Скидка:</span>
+                      <span className="font-black text-emerald-700 text-sm">-{lastValidatedCode.codeData.discountPercent}%</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px] font-medium">До скидки:</span>
+                      <span className="text-slate-400 line-through font-semibold text-xs">{lastValidatedCode.codeData.originalPrice?.toLocaleString() || '2 800'} ₸</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px] font-medium">К оплате:</span>
+                      <strong className="text-sm font-black text-slate-900 block">
+                        {lastValidatedCode.codeData.finalPrice.toLocaleString()} ₸
+                      </strong>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
-
-          {/* Validation Result Box */}
-          {lastValidatedCode && (
-            <div className={`p-4 sm:p-5 rounded-2xl border-2 transition-all animate-scale-up ${
-              lastValidatedCode.success 
-                ? 'bg-emerald-50/90 border-emerald-500 text-emerald-950' 
-                : 'bg-red-50 border-red-400 text-red-950'
-            }`}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 ${
-                    lastValidatedCode.success ? 'bg-emerald-600 shadow-sm' : 'bg-red-600'
-                  }`}>
-                    <CheckCircle2 className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-base text-slate-900">
-                      {lastValidatedCode.success ? `PIN ${lastValidatedCode.codeData?.code || inputCode} подтвержден!` : 'Ошибка проверки PIN'}
-                    </h4>
-                    <p className={`text-xs mt-0.5 font-medium ${lastValidatedCode.success ? 'text-emerald-700' : 'text-red-700'}`}>
-                      {lastValidatedCode.message}
-                    </p>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={clearLastValidation}
-                  className="text-xs font-bold text-slate-400 hover:text-slate-700 px-2 py-1 rounded-lg hover:bg-white transition cursor-pointer"
-                >
-                  Очистить ✕
-                </button>
-              </div>
-
-              {lastValidatedCode.codeData && (
-                <div className="mt-4 pt-3 border-t border-emerald-200/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                  <div>
-                    <span className="text-slate-500 block text-[11px] font-medium">Студент:</span>
-                    <strong className="text-slate-900 font-bold block">{lastValidatedCode.codeData.studentName || 'Алихан С.'}</strong>
-                    <span className="text-[10px] text-slate-500">{lastValidatedCode.codeData.studentUni || 'КазНУ им. аль-Фараби'}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[11px] font-medium">Скидка:</span>
-                    <span className="font-black text-emerald-700 text-sm">-{lastValidatedCode.codeData.discountPercent}%</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[11px] font-medium">До скидки:</span>
-                    <span className="text-slate-400 line-through font-semibold">{lastValidatedCode.codeData.originalPrice?.toLocaleString() || '2 800'} ₸</span>
-                  </div>
-                  <div className="text-right sm:text-left">
-                    <span className="text-slate-500 block text-[11px] font-medium">К оплате в кассу:</span>
-                    <strong className="text-base font-black text-slate-900 block">
-                      {lastValidatedCode.codeData.finalPrice.toLocaleString()} ₸
-                    </strong>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
         </div>
 
-        {/* Right Column (5 cols): Express Analytics */}
-        <div className="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div>
-              <h3 className="font-extrabold text-base sm:text-lg text-slate-900">
-                Экспресс-аналитика
-              </h3>
-              <p className="text-xs text-slate-500">
-                Метрики выручки за сегодня
-              </p>
-            </div>
-            <span className="text-xs bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-xl">
-              Смена 15:00
-            </span>
-          </div>
-
-          {/* 3 Metric Tiles */}
-          <div className="space-y-3">
-            <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between transition">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
-                  <Users className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs text-slate-500 font-medium block">Привлечено гостей:</span>
-                  <span className="text-lg font-black text-slate-900">
-                    {b2bMetrics.studentsToday} чел.
-                  </span>
-                </div>
+        {/* Column 2: Express Analytics */}
+        <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-extrabold text-base sm:text-lg text-slate-900 leading-tight">
+                  Экспресс-аналитика
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Метрики выручки за сегодня
+                </p>
               </div>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-xl">
-                +18% к ср.
+              <span className="text-xs bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-xl">
+                Смена 15:00
               </span>
             </div>
 
-            <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between transition">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
-                  <TrendingUp className="w-5 h-5" />
+            {/* 3 Metric Tiles */}
+            <div className="space-y-3 mt-4">
+              <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-200/80 rounded-2xl p-3.5 flex items-center justify-between transition">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 font-medium block">Привлечено гостей:</span>
+                    <span className="text-base sm:text-lg font-black text-slate-900">
+                      {b2bMetrics.studentsToday} чел.
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-xs text-slate-500 font-medium block">Выручка в непик:</span>
-                  <span className="text-lg font-black text-emerald-700">
-                    +{b2bMetrics.additionalRevenue.toLocaleString()} ₸
-                  </span>
-                </div>
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-xl shrink-0">
+                  +18% к ср.
+                </span>
               </div>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-xl">
-                Чистый доход
-              </span>
-            </div>
 
-            <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between transition">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-xs">
-                  <Percent className="w-5 h-5" />
+              <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-200/80 rounded-2xl p-3.5 flex items-center justify-between transition">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 font-medium block">Выручка в непик:</span>
+                    <span className="text-base sm:text-lg font-black text-emerald-700">
+                      +{b2bMetrics.additionalRevenue.toLocaleString()} ₸
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-xs text-slate-500 font-medium block">Возврат гостей (LTV):</span>
-                  <span className="text-lg font-black text-indigo-900">
-                    {b2bMetrics.repeatConversionPercent}%
-                  </span>
-                </div>
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-xl shrink-0">
+                  Чистый доход
+                </span>
               </div>
-              <span className="text-xs font-bold text-indigo-700 bg-indigo-100/80 px-2.5 py-1 rounded-xl">
-                Постоянные
-              </span>
+
+              <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-200/80 rounded-2xl p-3.5 flex items-center justify-between transition">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                    <Percent className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 font-medium block">Возврат гостей (LTV):</span>
+                    <span className="text-base sm:text-lg font-black text-indigo-900">
+                      {b2bMetrics.repeatConversionPercent}%
+                    </span>
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-indigo-700 bg-indigo-100/80 px-2.5 py-1 rounded-xl shrink-0">
+                  Постоянные
+                </span>
+              </div>
             </div>
           </div>
 
@@ -377,6 +341,82 @@ export const CashierView: React.FC = () => {
             <p className="text-[11px] text-slate-400">
               Скидки Nooki привлекают студентов именно в пустые часы, выравнивая суточную нагрузку кухни.
             </p>
+          </div>
+        </div>
+
+        {/* Column 3: Nooki Discount Control */}
+        <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-5 transition-all">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold shrink-0 ${
+                  urboHappyHoursActive 
+                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                    : 'bg-slate-100 text-slate-600 border border-slate-200'
+                }`}>
+                  <BadgePercent className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base sm:text-lg text-slate-900 leading-tight">
+                    Скидка Nooki
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Управление потоком гостей
+                  </p>
+                </div>
+              </div>
+
+              <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shrink-0 ${
+                urboHappyHoursActive 
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                  : 'bg-slate-100 text-slate-600 border border-slate-200'
+              }`}>
+                {urboHappyHoursActive ? 'В эфире' : 'Пауза'}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug">
+                {urboHappyHoursActive ? 'Скидка 40% активна для гостей Nooki' : 'Скидка временно отключена'}
+              </h4>
+
+              <p className="text-xs leading-relaxed text-slate-500">
+                {urboHappyHoursActive
+                  ? 'Заведение принимает 4-значные PIN-коды со скидкой 40% до 17:00. Гости приходят в свободное от очередей время.'
+                  : 'Поток гостей приостановлен. Включите, когда зал пустует, чтобы привлечь студентов.'}
+              </p>
+            </div>
+
+            {/* Parameter Details */}
+            <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/80 text-xs space-y-2.5">
+              <div className="flex items-center justify-between text-slate-600">
+                <span className="font-medium">Период действия:</span>
+                <span className="font-bold text-slate-900">до 17:00 (непик)</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-600">
+                <span className="font-medium">Размер скидки:</span>
+                <span className="font-black text-emerald-600 text-sm">-40%</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-600">
+                <span className="font-medium">Тип валидации:</span>
+                <span className="font-semibold text-slate-800">4-значный PIN</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Toggle Button */}
+          <div className="pt-2">
+            <button
+              onClick={toggleUrboHappyHours}
+              className={`w-full py-3.5 px-5 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 cursor-pointer shrink-0 ${
+                urboHappyHoursActive
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-emerald-500/20'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20'
+              }`}
+            >
+              <Power className="w-4 h-4" />
+              <span>{urboHappyHoursActive ? 'Акция ВКЛЮЧЕНА' : 'ВКЛЮЧИТЬ АКЦИЮ'}</span>
+            </button>
           </div>
         </div>
 
