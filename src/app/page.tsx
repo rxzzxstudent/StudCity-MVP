@@ -8,7 +8,7 @@ import { CashierView } from '@/components/cashier/CashierView';
 import { UnifiedCityMap } from '@/components/map/UnifiedCityMap';
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { NookiLogo } from '@/components/NookiLogo';
-import { Heart, Flame, MapPin, Store, MessageSquareHeart } from 'lucide-react';
+import { Heart, Flame, MapPin, Store } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 
 import { QrModal } from '@/components/student/QrModal';
@@ -54,97 +54,84 @@ function AppContent() {
         </div>
       </footer>
 
-      {/* Floating Mobile Bottom Navigation Bar for Telegram Mini App & Phones */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/90 px-3 py-2 pb-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] flex items-center justify-around">
-        {/* 1. Offers / Slots Tab */}
-        <button
-          onClick={() => {
-            setRole('student');
-            setStudentTab('offers');
-          }}
-          className="flex flex-col items-center gap-1 min-w-[64px] py-1 cursor-pointer transition active:scale-95 group"
-        >
-          <div className={`w-12 h-7.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-            role === 'student' && studentTab === 'offers'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 -translate-y-0.5'
-              : 'text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-800'
-          }`}>
-            <Flame className="w-4 h-4" />
-          </div>
-          <span className={`text-[11px] tracking-tight transition-colors ${
-            role === 'student' && studentTab === 'offers'
-              ? 'font-black text-blue-600'
-              : 'font-semibold text-slate-500'
-          }`}>
-            Скидки
-          </span>
-        </button>
+      {/* Modern Mobile Bottom Navigation Bar (3 Clean Tabs) */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] px-2 py-2 pb-3">
+        <div className="grid grid-cols-3 max-w-md mx-auto">
+          {/* 1. Offers / Slots Tab */}
+          <button
+            onClick={() => {
+              setRole('student');
+              setStudentTab('offers');
+            }}
+            className="flex flex-col items-center justify-center py-1 px-2 transition active:scale-95 cursor-pointer group"
+          >
+            <div className={`px-5 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+              role === 'student' && studentTab === 'offers'
+                ? 'bg-blue-50 text-blue-600 scale-105'
+                : 'text-slate-400 group-hover:text-slate-600'
+            }`}>
+              <Flame className={`w-6 h-6 transition-all ${
+                role === 'student' && studentTab === 'offers' ? 'stroke-[2.2]' : 'stroke-[1.8]'
+              }`} />
+            </div>
+            <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
+              role === 'student' && studentTab === 'offers'
+                ? 'font-black text-blue-600'
+                : 'font-semibold text-slate-500'
+            }`}>
+              Скидки
+            </span>
+          </button>
 
-        {/* 2. Map Tab */}
-        <button
-          onClick={() => {
-            setRole('student');
-            setStudentTab('map');
-          }}
-          className="flex flex-col items-center gap-1 min-w-[64px] py-1 cursor-pointer transition active:scale-95 group"
-        >
-          <div className={`w-12 h-7.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-            role === 'student' && studentTab === 'map'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 -translate-y-0.5'
-              : 'text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-800'
-          }`}>
-            <MapPin className="w-4 h-4" />
-          </div>
-          <span className={`text-[11px] tracking-tight transition-colors ${
-            role === 'student' && studentTab === 'map'
-              ? 'font-black text-blue-600'
-              : 'font-semibold text-slate-500'
-          }`}>
-            Карта
-          </span>
-        </button>
+          {/* 2. Map Tab */}
+          <button
+            onClick={() => {
+              setRole('student');
+              setStudentTab('map');
+            }}
+            className="flex flex-col items-center justify-center py-1 px-2 transition active:scale-95 cursor-pointer group"
+          >
+            <div className={`px-5 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+              role === 'student' && studentTab === 'map'
+                ? 'bg-blue-50 text-blue-600 scale-105'
+                : 'text-slate-400 group-hover:text-slate-600'
+            }`}>
+              <MapPin className={`w-6 h-6 transition-all ${
+                role === 'student' && studentTab === 'map' ? 'stroke-[2.2]' : 'stroke-[1.8]'
+              }`} />
+            </div>
+            <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
+              role === 'student' && studentTab === 'map'
+                ? 'font-black text-blue-600'
+                : 'font-semibold text-slate-500'
+            }`}>
+              Карта
+            </span>
+          </button>
 
-        {/* 3. Cashier Tab */}
-        <button
-          onClick={() => setRole('cashier')}
-          className="flex flex-col items-center gap-1 min-w-[64px] py-1 cursor-pointer transition active:scale-95 group"
-        >
-          <div className={`w-12 h-7.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-            role === 'cashier'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 -translate-y-0.5'
-              : 'text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-800'
-          }`}>
-            <Store className="w-4 h-4" />
-          </div>
-          <span className={`text-[11px] tracking-tight transition-colors ${
-            role === 'cashier'
-              ? 'font-black text-blue-600'
-              : 'font-semibold text-slate-500'
-          }`}>
-            Касса
-          </span>
-        </button>
-
-        {/* 4. Feedback Tab */}
-        <button
-          onClick={() => setFeedbackOpen(true)}
-          className="flex flex-col items-center gap-1 min-w-[64px] py-1 cursor-pointer transition active:scale-95 group"
-        >
-          <div className={`w-12 h-7.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-            feedbackOpen
-              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/30 -translate-y-0.5'
-              : 'text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-800'
-          }`}>
-            <MessageSquareHeart className="w-4 h-4" />
-          </div>
-          <span className={`text-[11px] tracking-tight transition-colors ${
-            feedbackOpen
-              ? 'font-black text-pink-600'
-              : 'font-semibold text-slate-500'
-          }`}>
-            Отзыв
-          </span>
-        </button>
+          {/* 3. Cashier Tab */}
+          <button
+            onClick={() => setRole('cashier')}
+            className="flex flex-col items-center justify-center py-1 px-2 transition active:scale-95 cursor-pointer group"
+          >
+            <div className={`px-5 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+              role === 'cashier'
+                ? 'bg-blue-50 text-blue-600 scale-105'
+                : 'text-slate-400 group-hover:text-slate-600'
+            }`}>
+              <Store className={`w-6 h-6 transition-all ${
+                role === 'cashier' ? 'stroke-[2.2]' : 'stroke-[1.8]'
+              }`} />
+            </div>
+            <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
+              role === 'cashier'
+                ? 'font-black text-blue-600'
+                : 'font-semibold text-slate-500'
+            }`}>
+              Касса
+            </span>
+          </button>
+        </div>
       </nav>
 
       {/* Global PIN & QR Access Modal */}
