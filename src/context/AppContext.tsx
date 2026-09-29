@@ -1,13 +1,18 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Role, Category, VenueOffer, StudentCode, RedemptionLog, B2BMetrics, StudentTab, MapSpot, MapSpotCategory } from '@/types';
+import { Role, UserProfile, Category, VenueOffer, StudentCode, RedemptionLog, B2BMetrics, StudentTab, MapSpot, MapSpotCategory } from '@/types';
 import { INITIAL_MAP_SPOTS } from '@/components/map/spotsData';
 import { trackEvent, trackRedemption, trackUserSpot } from '@/lib/analytics';
 
 export type SortOption = 'popular' | 'discount' | 'distance' | 'expiring';
 
 interface AppContextType {
+  currentUser: UserProfile | null;
+  setCurrentUser: (user: UserProfile | null) => void;
+  logout: () => void;
+  isAuthModalOpen: boolean;
+  setAuthModalOpen: (open: boolean) => void;
   role: Role;
   setRole: (role: Role) => void;
   studentTab: StudentTab;
@@ -23,6 +28,7 @@ interface AppContextType {
   sortBy: SortOption;
   setSortBy: (sort: SortOption) => void;
   offers: VenueOffer[];
+  updateVenueOffer: (offerId: string, partial: Partial<VenueOffer>) => void;
   mapSpots: MapSpot[];
   addMapSpot: (spot: Omit<MapSpot, 'id'>) => void;
   deleteMapSpot: (id: string) => void;
@@ -68,7 +74,7 @@ const INITIAL_OFFERS: VenueOffer[] = [
     remainingSeconds: 6120,
     slotsRemaining: 8,
     totalSlots: 15,
-    groupDiscountText: '👥 Вдвоем еще дешевле: по 1 000 ₸ с человека',
+    groupDiscountText: 'Вдвоем еще дешевле: по 1 000 ₸ с человека',
     image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=800&q=80',
     iconName: 'Utensils',
     isControlledByCashier: true,
@@ -94,7 +100,7 @@ const INITIAL_OFFERS: VenueOffer[] = [
     remainingSeconds: 8400,
     slotsRemaining: 5,
     totalSlots: 10,
-    groupDiscountText: '👥 Приходи с напарником — по 1 300 ₸ за каждого',
+    groupDiscountText: 'Приходи с напарником — по 1 300 ₸ за каждого',
     image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
     iconName: 'Sparkles',
     isControlledByCashier: false,
@@ -120,7 +126,7 @@ const INITIAL_OFFERS: VenueOffer[] = [
     remainingSeconds: 16800,
     slotsRemaining: 12,
     totalSlots: 20,
-    groupDiscountText: '👥 Компаниям от 2-х человек — десерт в подарок',
+    groupDiscountText: 'Компаниям от 2-х человек — десерт в подарок',
     image: '/partners/coffeemoon.webp',
     iconName: 'Coffee',
     isControlledByCashier: true,
@@ -173,7 +179,7 @@ const INITIAL_OFFERS: VenueOffer[] = [
     remainingSeconds: 9600,
     slotsRemaining: 9,
     totalSlots: 15,
-    groupDiscountText: '👥 Вдвоем чайник чая в подарок к комбо',
+    groupDiscountText: 'Вдвоем чайник чая в подарок к комбо',
     image: '/partners/de-tulp.webp',
     iconName: 'Utensils',
     isControlledByCashier: false,
@@ -298,6 +304,9 @@ const INITIAL_METRICS: B2BMetrics = {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+  const [pendingOfferToClaim, setPendingOfferToClaim] = useState<VenueOffer | null>(null);
   const [role, setRole] = useState<Role>('student');
   const [studentTab, setStudentTab] = useState<StudentTab>('offers');
   const [viewMode, setViewMode] = useState<'mobile-frame' | 'responsive'>('responsive');
@@ -316,6 +325,48 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     'print',
   ]);
   const [selectedMapSpot, setSelectedMapSpot] = useState<MapSpot | null>(null);
+
+  // Load user spots and auth from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedAuth = localStorage.getItem('nooki_auth_user');
+        if (savedAuth) {
+          const parsed = JSON.parse(savedAuth);
+          if (parsed && parsed.role) {
+            setCurrentUser(parsed);
+            setRole(parsed.role);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
+
+  const handleSetCurrentUser = (user: UserProfile | null) => {
+    setCurrentUser(user);
+    if (typeof window !== 'undefined') {
+      if (user) {
+        localStorage.setItem('nooki_auth_user', JSON.stringify(user));
+        setRole(user.role);
+        if (pendingOfferToClaim) {
+          const offerToClaim = pendingOfferToClaim;
+          setPendingOfferToClaim(null);
+          setTimeout(() => {
+            openQrModal(offerToClaim);
+          }, 300);
+        }
+      } else {
+        localStorage.removeItem('nooki_auth_user');
+        setRole('student');
+      }
+    }
+  };
+
+  const logout = () => {
+    handleSetCurrentUser(null);
+  };
 
   // Load user spots from localStorage
   useEffect(() => {
@@ -546,6 +597,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const openQrModal = (offer: VenueOffer) => {
+    if (!currentUser) {
+      setPendingOfferToClaim(offer);
+      setAuthModalOpen(true);
+      return;
+    }
+
     setActiveOfferForQr(offer);
     const codeStr = generateRandomCode();
     const newCode: StudentCode = {
@@ -557,8 +614,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       originalPrice: offer.originalPrice,
       createdAt: Date.now(),
       expiresInSeconds: 300,
-      studentName: 'Алихан Сейткали',
-      studentUni: 'КазНУ им. аль-Фараби',
+      studentName: currentUser.displayName || 'Пользователь Nooki',
+      studentUni: currentUser.role === 'cashier' ? 'Бизнес партнер' : 'Пользователь Nooki',
       isValid: true,
     };
     setActiveStudentCode(newCode);
@@ -774,6 +831,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setLastValidatedCode(null);
   };
 
+  const updateVenueOffer = (offerId: string, partial: Partial<VenueOffer>) => {
+    setOffers((prev) =>
+      prev.map((off) => (off.id === offerId ? { ...off, ...partial } : off))
+    );
+  };
+
   const resetDemoData = () => {
     setOffers(INITIAL_OFFERS);
     setMapSpots(INITIAL_MAP_SPOTS);
@@ -797,6 +860,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AppContext.Provider
       value={{
+        currentUser,
+        setCurrentUser: handleSetCurrentUser,
+        logout,
+        isAuthModalOpen,
+        setAuthModalOpen,
         role,
         setRole,
         studentTab,
@@ -812,6 +880,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         sortBy,
         setSortBy,
         offers,
+        updateVenueOffer,
         mapSpots,
         addMapSpot,
         deleteMapSpot,

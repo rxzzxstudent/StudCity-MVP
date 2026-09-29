@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useApp } from '@/context/AppContext';
+import { User, Briefcase } from 'lucide-react';
 
 interface HeaderProps {
   onOpenFeedback?: () => void;
@@ -12,7 +13,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFeedback }) => {
     role, 
     setRole, 
     studentTab, 
-    setStudentTab 
+    setStudentTab,
+    currentUser,
+    setAuthModalOpen 
   } = useApp();
 
   return (
@@ -79,31 +82,55 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFeedback }) => {
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2563eb] rounded-full" />
               )}
             </button>
-
-            <button
-              type="button"
-              onClick={() => setRole('cashier')}
-              className={`transition cursor-pointer relative py-1 ${
-                role === 'cashier'
-                  ? 'text-[#2563eb] font-bold'
-                  : 'text-slate-600 hover:text-[#2563eb]'
-              }`}
-            >
-              <span>Кассирам / B2B</span>
-              {role === 'cashier' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2563eb] rounded-full" />
-              )}
-            </button>
           </nav>
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Login / Profile button */}
+            <button
+              type="button"
+              onClick={() => setAuthModalOpen(true)}
+              className={`px-3 sm:px-4 py-2 rounded-full font-bold text-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5 border shadow-xs ${
+                role === 'cashier'
+                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}
+              title={currentUser ? `Профиль: ${currentUser.displayName}` : 'Войти в профиль'}
+            >
+              {currentUser ? (
+                currentUser.role === 'cashier' ? (
+                  <>
+                    <Briefcase className="w-3.5 h-3.5 text-indigo-600" />
+                    <span className="max-w-[120px] truncate">{currentUser.venueName || currentUser.displayName}</span>
+                  </>
+                ) : (
+                  <>
+                    <User className="w-3.5 h-3.5 text-blue-600" />
+                    <span className="max-w-[100px] truncate">{currentUser.displayName}</span>
+                  </>
+                )
+              ) : (
+                role === 'cashier' ? (
+                  <>
+                    <Briefcase className="w-3.5 h-3.5 text-indigo-600" />
+                    <span className="hidden xs:inline">Бизнес партнер</span>
+                    <span className="xs:hidden">Бизнес</span>
+                  </>
+                ) : (
+                  <>
+                    <User className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Войти</span>
+                  </>
+                )
+              )}
+            </button>
+
             {onOpenFeedback && (
               <button
                 type="button"
                 onClick={onOpenFeedback}
                 title="Оставить отзыв о сервисе"
-                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                className="px-3.5 sm:px-4 py-2 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5"
               >
                 <span>Отзыв</span>
               </button>

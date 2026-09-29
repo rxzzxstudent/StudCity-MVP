@@ -42,8 +42,13 @@ const FeedbackModal = dynamic(
   { ssr: false }
 );
 
+const AuthProfileModal = dynamic(
+  () => import('@/components/AuthProfileModal').then((mod) => mod.AuthProfileModal),
+  { ssr: false }
+);
+
 function AppContent() {
-  const { role, setRole, studentTab, setStudentTab } = useApp();
+  const { role, setRole, studentTab, setStudentTab, isAuthModalOpen, setAuthModalOpen } = useApp();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
@@ -80,96 +85,93 @@ function AppContent() {
           <p className="text-slate-400">
             Смарт-доступ к непиковым слотам & Карта инфраструктуры города
           </p>
-          <div className="flex items-center gap-1 text-slate-400">
+          <div className="flex items-center gap-1.5 text-slate-400">
             <span>Сделано с заботой</span>
-            <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-            <span>о горожанах</span>
+            <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />
           </div>
         </div>
       </footer>
 
-      {/* Modern Mobile Bottom Navigation Bar (3 Clean Tabs) */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] px-2 py-2 pb-3">
-        <div className="grid grid-cols-3 max-w-md mx-auto">
-          {/* 1. Offers / Slots Tab */}
-          <button
-            onClick={() => {
-              setRole('student');
-              setStudentTab('offers');
-            }}
-            className="flex flex-col items-center justify-center py-1 px-2 transition active:scale-95 cursor-pointer group"
-          >
-            <div className={`px-5 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-              role === 'student' && studentTab === 'offers'
-                ? 'bg-blue-50 text-blue-600 scale-105'
-                : 'text-slate-400 group-hover:text-slate-600'
-            }`}>
-              <Flame className={`w-6 h-6 transition-all ${
-                role === 'student' && studentTab === 'offers' ? 'stroke-[2.2]' : 'stroke-[1.8]'
-              }`} />
-            </div>
-            <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
-              role === 'student' && studentTab === 'offers'
-                ? 'font-black text-blue-600'
-                : 'font-semibold text-slate-500'
-            }`}>
-              Скидки
-            </span>
-          </button>
+      {/* Modern Mobile Bottom Navigation Bar */}
+      {role === 'student' ? (
+        <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] px-4 py-2 pb-3">
+          <div className="grid grid-cols-2 max-w-xs mx-auto">
+            {/* 1. Offers / Slots Tab */}
+            <button
+              onClick={() => {
+                setRole('student');
+                setStudentTab('offers');
+              }}
+              className="flex flex-col items-center justify-center py-1 px-3 transition active:scale-95 cursor-pointer group"
+            >
+              <div className={`px-6 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+                studentTab === 'offers'
+                  ? 'bg-blue-50 text-blue-600 scale-105'
+                  : 'text-slate-400 group-hover:text-slate-600'
+              }`}>
+                <Flame className={`w-6 h-6 transition-all ${
+                  studentTab === 'offers' ? 'stroke-[2.2]' : 'stroke-[1.8]'
+                }`} />
+              </div>
+              <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
+                studentTab === 'offers'
+                  ? 'font-black text-blue-600'
+                  : 'font-semibold text-slate-500'
+              }`}>
+                Скидки
+              </span>
+            </button>
 
-          {/* 2. Map Tab */}
+            {/* 2. Map Tab */}
+            <button
+              onClick={() => {
+                setRole('student');
+                setStudentTab('map');
+              }}
+              className="flex flex-col items-center justify-center py-1 px-3 transition active:scale-95 cursor-pointer group"
+            >
+              <div className={`px-6 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+                studentTab === 'map'
+                  ? 'bg-blue-50 text-blue-600 scale-105'
+                  : 'text-slate-400 group-hover:text-slate-600'
+              }`}>
+                <MapPin className={`w-6 h-6 transition-all ${
+                  studentTab === 'map' ? 'stroke-[2.2]' : 'stroke-[1.8]'
+                }`} />
+              </div>
+              <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
+                studentTab === 'map'
+                  ? 'font-black text-blue-600'
+                  : 'font-semibold text-slate-500'
+              }`}>
+                Карта
+              </span>
+            </button>
+          </div>
+        </nav>
+      ) : (
+        <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] px-4 py-2.5 pb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Store className="w-4 h-4 text-indigo-600" />
+            <span className="text-xs font-black text-slate-900">Бизнес-партнер</span>
+          </div>
           <button
-            onClick={() => {
-              setRole('student');
-              setStudentTab('map');
-            }}
-            className="flex flex-col items-center justify-center py-1 px-2 transition active:scale-95 cursor-pointer group"
+            onClick={() => setRole('student')}
+            className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl border border-blue-100 transition active:scale-95 cursor-pointer"
           >
-            <div className={`px-5 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-              role === 'student' && studentTab === 'map'
-                ? 'bg-blue-50 text-blue-600 scale-105'
-                : 'text-slate-400 group-hover:text-slate-600'
-            }`}>
-              <MapPin className={`w-6 h-6 transition-all ${
-                role === 'student' && studentTab === 'map' ? 'stroke-[2.2]' : 'stroke-[1.8]'
-              }`} />
-            </div>
-            <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
-              role === 'student' && studentTab === 'map'
-                ? 'font-black text-blue-600'
-                : 'font-semibold text-slate-500'
-            }`}>
-              Карта
-            </span>
+            ← В режим пользователя
           </button>
-
-          {/* 3. Cashier Tab */}
-          <button
-            onClick={() => setRole('cashier')}
-            className="flex flex-col items-center justify-center py-1 px-2 transition active:scale-95 cursor-pointer group"
-          >
-            <div className={`px-5 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-              role === 'cashier'
-                ? 'bg-blue-50 text-blue-600 scale-105'
-                : 'text-slate-400 group-hover:text-slate-600'
-            }`}>
-              <Store className={`w-6 h-6 transition-all ${
-                role === 'cashier' ? 'stroke-[2.2]' : 'stroke-[1.8]'
-              }`} />
-            </div>
-            <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
-              role === 'cashier'
-                ? 'font-black text-blue-600'
-                : 'font-semibold text-slate-500'
-            }`}>
-              Касса
-            </span>
-          </button>
-        </div>
-      </nav>
+        </nav>
+      )}
 
       {/* Global PIN & QR Access Modal */}
       <QrModal />
+
+      {/* Global Auth & Profile Modal */}
+      <AuthProfileModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+      />
 
       {/* Feedback Modal */}
       <FeedbackModal

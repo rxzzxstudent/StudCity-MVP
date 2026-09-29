@@ -1,5 +1,13 @@
 export type Role = 'student' | 'cashier';
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  displayName: string;
+  role: Role;
+  venueName?: string;
+}
+
 export type StudentTab = 'offers' | 'map';
 
 export type MapSpotCategory = 'toilet' | 'wifi' | 'outlet' | 'deal' | 'print';
@@ -50,7 +58,7 @@ export interface VenueOffer {
   quietHoursWindow?: string; // e.g. "14:00 – 16:30"
   slotsRemaining?: number; // e.g. 8
   totalSlots?: number; // e.g. 15
-  groupDiscountText?: string; // e.g. "👥 Вдвоем — по 1 000 ₸ с человека"
+  groupDiscountText?: string; // e.g. "Вдвоем — по 1 000 ₸ с человека"
   image: string;
   iconName: string;
   isControlledByCashier?: boolean; // Controlled by Cashier

@@ -314,17 +314,14 @@ export const StudentView: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Flash slots remaining counter (документация: «осталось X из Y слотов») */}
+                  {/* Flash slots remaining counter */}
                   {typeof offer.slotsRemaining === 'number' && typeof offer.totalSlots === 'number' && (
-                    <div className="flex items-center justify-between bg-amber-50/70 border border-amber-200/70 rounded-xl px-2.5 py-1 text-[11px] font-bold">
-                      <span className="text-amber-800 flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${offer.slotsRemaining > 0 && offer.happyHoursActive ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
-                        <span>Лимит непика:</span>
-                      </span>
-                      <span className="text-amber-950 font-extrabold">
+                    <div className="inline-flex items-center gap-1.5 bg-amber-50/80 border border-amber-200/80 rounded-xl px-2.5 py-1 text-[11px] font-bold text-amber-900 w-fit">
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${offer.slotsRemaining > 0 && offer.happyHoursActive ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
+                      <span>
                         {offer.slotsRemaining > 0
-                          ? `осталось ${offer.slotsRemaining} из ${offer.totalSlots} мест`
-                          : 'Все места заняты'}
+                          ? `Осталось ${offer.slotsRemaining} из ${offer.totalSlots} мест`
+                          : 'Все места на сегодня заняты'}
                       </span>
                     </div>
                   )}
@@ -343,7 +340,7 @@ export const StudentView: React.FC = () => {
                   {offer.groupDiscountText && (
                     <div className="text-xs text-indigo-800 bg-indigo-50/90 font-medium px-3 py-1.5 rounded-xl border border-indigo-200/80 flex items-center gap-1.5">
                       <Users className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                      <span>{offer.groupDiscountText}</span>
+                      <span>{offer.groupDiscountText.replace(/^👥\s*/, '')}</span>
                     </div>
                   )}
                   
