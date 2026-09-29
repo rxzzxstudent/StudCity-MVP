@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { useApp } from '@/context/AppContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { 
@@ -301,7 +300,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
     }
   };
 
-  return createPortal(
+  return (
     <div 
       className="fixed inset-0 z-[9999] overflow-y-auto p-3 sm:p-6 bg-slate-900/60 backdrop-blur-sm flex justify-center items-start sm:items-center animate-fade-in"
       onClick={handleClose}
@@ -601,7 +600,6 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
           </div>
         )}
       </div>
-    </div>,
-    document.body
+    </div>
   );
 };

@@ -9,6 +9,7 @@ import { NookiLogo } from '@/components/NookiLogo';
 import { Heart, Flame, MapPin, Store } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 import { QrModal } from '@/components/student/QrModal';
+import { AuthProfileModal } from '@/components/AuthProfileModal';
 
 // Code splitting (React.lazy) for heavy components to minimize initial bundle size and transfer
 const UnifiedCityMap = dynamic(
@@ -39,11 +40,6 @@ const CashierView = dynamic(
 
 const FeedbackModal = dynamic(
   () => import('@/components/FeedbackModal').then((mod) => mod.FeedbackModal),
-  { ssr: false }
-);
-
-const AuthProfileModal = dynamic(
-  () => import('@/components/AuthProfileModal').then((mod) => mod.AuthProfileModal),
   { ssr: false }
 );
 
