@@ -59,7 +59,7 @@ async function answerCallbackQuery(callbackQueryId: string) {
   });
 }
 
-function getWelcomeMessage(firstName = 'Горожанин', webAppUrl = '') {
+function getWelcomeMessage(firstName = 'Горожанин') {
   return (
     `👋 <b>Привет, ${firstName}!</b>\n\n` +
     `⚡ Добро пожаловать в <b>Nooki</b> — единый городской сервис смарт-доступа к услугам заведений в непиковые «тихие» часы и бесплатной карте городской инфраструктуры!\n\n` +
@@ -69,9 +69,7 @@ function getWelcomeMessage(firstName = 'Горожанин', webAppUrl = '') {
     `2️⃣ <b>Городская карта инфраструктуры:</b>\n` +
     `Бесплатный навигатор по местам с проверенными чистыми санузлами 🚻, открытыми розетками 🔌, быстрым Wi-Fi 📶 и тихими рабочими зонами 🤫.\n\n` +
     `3️⃣ <b>Мгновенное погашение на кассе:</b>\n` +
-    `4-значный PIN-код или динамический QR для применения скидки за 3 секунды без сложного ПО.\n\n` +
-    `👇 <i>Нажмите кнопку ниже, чтобы запустить приложение прямо в Telegram:</i>\n\n` +
-    `🌐 Ссылка на сайт: ${webAppUrl}`
+    `4-значный PIN-код или динамический QR для применения скидки за 3 секунды без сложного ПО.`
   );
 }
 
@@ -101,7 +99,7 @@ async function handleUpdate(update: Record<string, any>) {
     const firstName = msg.from?.first_name || 'Горожанин';
     await sendMessage(
       chatId, 
-      getWelcomeMessage(firstName, webAppUrl), 
+      getWelcomeMessage(firstName), 
       getWebAppKeyboard(webAppUrl)
     );
   }
@@ -115,7 +113,7 @@ async function handleUpdate(update: Record<string, any>) {
     if (chatId) {
       await sendMessage(
         chatId, 
-        getWelcomeMessage(firstName, webAppUrl), 
+        getWelcomeMessage(firstName), 
         getWebAppKeyboard(webAppUrl)
       );
     }
