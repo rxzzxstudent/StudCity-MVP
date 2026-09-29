@@ -62,7 +62,7 @@ export const CashierView: React.FC = () => {
   const [dailySlots, setDailySlots] = useState(activeVenue.totalSlots || 15);
   const [builderSavedMessage, setBuilderSavedMessage] = useState(false);
 
-  // Sync form when venue selection changes
+  // Sync form ONLY when venue selection changes (by ID)
   useEffect(() => {
     setOfferTitle(activeVenue.title);
     setOriginalPrice(activeVenue.originalPrice);
@@ -73,7 +73,7 @@ export const CashierView: React.FC = () => {
       if (parts[1]) setQuietEnd(parts[1]);
     }
     if (activeVenue.totalSlots) setDailySlots(activeVenue.totalSlots);
-  }, [activeVenue]);
+  }, [activeVenue.id]);
 
   // Derived price for guest
   const calculatedDiscountedPrice = Math.round(originalPrice * (1 - discountPercent / 100));
@@ -153,9 +153,6 @@ export const CashierView: React.FC = () => {
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 {activeVenue.name}
               </h1>
-              <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-xl border border-indigo-100">
-                Кабинет Бизнес-партнера
-              </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -267,7 +264,7 @@ export const CashierView: React.FC = () => {
           }`}
         >
           <Sliders className="w-4 h-4" />
-          <span>Конструктор слота (Скидки & SKU)</span>
+          <span>Конструктор скидки</span>
         </button>
 
         <button
@@ -667,7 +664,7 @@ export const CashierView: React.FC = () => {
             <div className="pb-4 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h3 className="font-extrabold text-base sm:text-lg text-slate-900">
-                  Конструктор непикового слота
+                  Конструктор скидки
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Настройте предложение на отдельный товар или комбо в тихие часы
@@ -910,9 +907,6 @@ export const CashierView: React.FC = () => {
                 <span className="text-xs font-black px-3 py-1 rounded-full bg-indigo-600 text-white tracking-wider uppercase inline-flex items-center gap-1.5 shadow-xs">
                   <BarChart3 className="w-3.5 h-3.5" />
                   <span>Закрытые B2B-данные Nooki</span>
-                </span>
-                <span className="text-xs font-bold text-indigo-700 bg-indigo-100/80 px-2.5 py-1 rounded-full">
-                  Район: Алматы
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
