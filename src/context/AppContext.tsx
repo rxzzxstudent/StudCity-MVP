@@ -43,6 +43,10 @@ interface AppContextType {
   closeQrModal: () => void;
   generateNewCode: () => void;
   codeTimeRemaining: number;
+  turboHappyHoursActive?: boolean;
+  toggleVenueOfferActive: (venueId: string) => void;
+  partnerErrorModalOpen: boolean;
+  setPartnerErrorModalOpen: (open: boolean) => void;
   urboHappyHoursActive: boolean;
   setUrboHappyHoursActive: (active: boolean) => void;
   toggleUrboHappyHours: () => void;
@@ -360,9 +364,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (pendingOfferToClaim) {
           const offerToClaim = pendingOfferToClaim;
           setPendingOfferToClaim(null);
-          setTimeout(() => {
-            openQrModal(offerToClaim);
-          }, 300);
+          if (user.role === 'cashier') {
+            setPartnerErrorModalOpen(true);
+          } else {
+            setTimeout(() => {
+              openQrModal(offerToClaim);
+            }, 300);
+          }
         }
       } else {
         localStorage.removeItem('nooki_auth_user');
@@ -468,34 +476,47 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     codeData?: StudentCode;
   } | null>(null);
 
-  // Sync Cashier Happy hours toggle for Coffee Moon
-  useEffect(() => {
-    setOffers((prevOffers) =>
-      prevOffers.map((off) =>
-        off.id === 'coffeemoon-cafe'
-          ? { ...off, happyHoursActive: urboHappyHoursActive }
-          : off
-      )
-    );
-  }, [urboHappyHoursActive]);
+  const [partnerErrorModalOpen, setPartnerErrorModalOpen] = useState(false);
 
-  // Global Happy Hours countdown ticker for offers
+  const toggleVenueOfferActive = (venueId: string) => {
+    setOffers((prev) =>
+      prev.map((off) => {
+        if (off.id !== venueId) return off;
+        const nextState = !off.happyHoursActive;
+        return {
+          ...off,
+          happyHoursActive: nextState,
+          remainingSeconds: nextState && off.remainingSeconds <= 0 ? 7200 : off.remainingSeconds,
+        };
+      })
+    );
+    if (venueId === 'coffeemoon-cafe') {
+      setUrboHappyHoursActive((prev) => !prev);
+    }
+  };
+
+  // Global Happy Hours countdown ticker for active offers
   useEffect(() => {
     const timer = setInterval(() => {
       setOffers((prev) =>
         prev.map((off) => {
-          const nextSec = Math.max(0, off.remainingSeconds - 1);
-          const isSlotActive = nextSec > 0 && (off.id === 'coffeemoon-cafe' ? urboHappyHoursActive : off.happyHoursActive);
+          if (!off.happyHoursActive) return off;
+          if (off.remainingSeconds <= 1) {
+            return {
+              ...off,
+              remainingSeconds: 0,
+              happyHoursActive: false,
+            };
+          }
           return {
             ...off,
-            remainingSeconds: nextSec,
-            happyHoursActive: isSlotActive,
+            remainingSeconds: off.remainingSeconds - 1,
           };
         })
       );
     }, 1000);
     return () => clearInterval(timer);
-  }, [urboHappyHoursActive]);
+  }, []);
 
   // 300s (5-min) countdown for active student PIN/QR code
   useEffect(() => {
@@ -610,6 +631,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    if (currentUser.role === 'cashier' || role === 'cashier') {
+      setPartnerErrorModalOpen(true);
+      return;
+    }
+
     setActiveOfferForQr(offer);
     const codeStr = generateRandomCode();
     const newCode: StudentCode = {
@@ -622,7 +648,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       createdAt: Date.now(),
       expiresInSeconds: 300,
       studentName: currentUser.displayName || 'Пользователь Nooki',
-      studentUni: currentUser.role === 'cashier' ? 'Бизнес партнер' : 'Пользователь Nooki',
+      studentUni: 'Пользователь Nooki',
       isValid: true,
     };
     setActiveStudentCode(newCode);
@@ -902,6 +928,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         closeQrModal,
         generateNewCode,
         codeTimeRemaining,
+        toggleVenueOfferActive,
+        partnerErrorModalOpen,
+        setPartnerErrorModalOpen,
+        turboHappyHoursActive: urboHappyHoursActive,
         urboHappyHoursActive,
         setUrboHappyHoursActive,
         toggleUrboHappyHours,

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '@/context/AppContext';
-import { User, Briefcase } from 'lucide-react';
+import { User, Briefcase, Store } from 'lucide-react';
 
 interface HeaderProps {
   onOpenFeedback?: () => void;
@@ -80,6 +80,25 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFeedback }) => {
               <span>Карта города</span>
               {role === 'student' && studentTab === 'map' && (
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2563eb] rounded-full" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setRole('cashier')}
+              className={`transition cursor-pointer relative py-1 flex items-center gap-1.5 ${
+                role === 'cashier'
+                  ? 'text-indigo-600 font-bold'
+                  : 'text-slate-600 hover:text-indigo-600'
+              }`}
+            >
+              <Store className="w-4 h-4 text-indigo-600" />
+              <span>Касса</span>
+              {currentUser?.role === 'cashier' && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Бизнес-аккаунт активен" />
+              )}
+              {role === 'cashier' && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />
               )}
             </button>
           </nav>

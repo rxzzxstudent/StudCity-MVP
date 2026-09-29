@@ -10,6 +10,7 @@ import { Heart, Flame, MapPin, Store } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 import { QrModal } from '@/components/student/QrModal';
 import { AuthProfileModal } from '@/components/AuthProfileModal';
+import { PartnerRestrictionModal } from '@/components/PartnerRestrictionModal';
 
 // Code splitting (React.lazy) for heavy components to minimize initial bundle size and transfer
 const UnifiedCityMap = dynamic(
@@ -176,6 +177,9 @@ function AppContent() {
 
       {/* Global PIN & QR Access Modal */}
       <QrModal />
+
+      {/* Business Partner Restriction Notice Modal */}
+      <PartnerRestrictionModal />
 
       {/* Global Auth & Profile Modal */}
       <AuthProfileModal

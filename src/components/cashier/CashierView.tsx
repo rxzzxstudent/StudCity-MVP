@@ -32,6 +32,7 @@ export const CashierView: React.FC = () => {
   const {
     offers,
     updateVenueOffer,
+    toggleVenueOfferActive,
     urboHappyHoursActive,
     toggleUrboHappyHours,
     activeStudentCode,
@@ -132,6 +133,10 @@ export const CashierView: React.FC = () => {
     setTimeout(() => {
       setBuilderSavedMessage(false);
     }, 3500);
+  };
+
+  const handleToggleHappyHours = () => {
+    toggleVenueOfferActive(activeVenue.id);
   };
 
   return (
@@ -581,15 +586,20 @@ export const CashierView: React.FC = () => {
               {/* Toggle Button */}
               <div className="pt-2">
                 <button
-                  onClick={toggleUrboHappyHours}
+                  type="button"
+                  onClick={handleToggleHappyHours}
                   className={`w-full py-3.5 px-5 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 cursor-pointer shrink-0 ${
                     activeVenue.happyHoursActive
                       ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-emerald-500/20'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20'
+                      : 'bg-slate-200 hover:bg-slate-300 text-slate-800 border border-slate-300 shadow-xs'
                   }`}
                 >
                   <Power className="w-4 h-4" />
-                  <span>{activeVenue.happyHoursActive ? 'Акция ВКЛЮЧЕНА' : 'ВКЛЮЧИТЬ АКЦИЮ'}</span>
+                  <span>
+                    {activeVenue.happyHoursActive
+                      ? 'Акция ВКЛЮЧЕНА (нажмите, чтобы выключить)'
+                      : 'Акция ВЫКЛЮЧЕНА (нажмите, чтобы включить)'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -892,16 +902,23 @@ export const CashierView: React.FC = () => {
       {/* ======================================================== */}
       {partnerTab === 'analytics' && (
         <div className="space-y-6 animate-fade-in">
-          {/* Header Banner */}
-          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-white/10 relative overflow-hidden">
-            <div className="relative z-10 max-w-2xl space-y-2">
-              <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-amber-400 text-slate-950 tracking-wider uppercase inline-block">
-                Закрытые B2B-данные Nooki
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+          {/* Header Banner in Clean Nooki Brand Style */}
+          <div className="bg-gradient-to-br from-indigo-50/90 via-blue-50/50 to-white text-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-indigo-100/90 relative overflow-hidden">
+            <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 max-w-2xl space-y-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black px-3 py-1 rounded-full bg-indigo-600 text-white tracking-wider uppercase inline-flex items-center gap-1.5 shadow-xs">
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span>Закрытые B2B-данные Nooki</span>
+                </span>
+                <span className="text-xs font-bold text-indigo-700 bg-indigo-100/80 px-2.5 py-1 rounded-full">
+                  Район: Алматы
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
                 Аналитика непикового спроса в вашем районе
               </h2>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
                 Обычные пользователи видят только скидки на карте. Для партнеров мы аккумулируем данные о пешеходном трафике, пиках поиска и упущенной выгоде вокруг вашего заведения.
               </p>
             </div>
