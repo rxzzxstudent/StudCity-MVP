@@ -82,8 +82,33 @@ async function sendToAnalyticsApi(type: 'event' | 'redemption' | 'feedback', pay
   }
 }
 
+// In-memory throttle cache for high-frequency events
+const eventThrottleMap = new Map<string, number>();
+
 // 1. Track Funnel Events ('app_open', 'pin_generated', 'pin_redeemed', 'spot_viewed')
 export async function trackEvent(eventType: string, payload: EventPayload = {}) {
+  // Session deduplication for 'app_open' to minimize serverless invocations
+  if (eventType === 'app_open' && typeof window !== 'undefined') {
+    try {
+      const alreadySent = sessionStorage.getItem('nooki_app_open_tracked');
+      if (alreadySent) {
+        return;
+      }
+      sessionStorage.setItem('nooki_app_open_tracked', 'true');
+    } catch {
+      // ignore
+    }
+  }
+
+  // Client-side rate-limiting: throttle repeated identical events to at most once per 3 seconds
+  const throttleKey = `${eventType}_${payload.venueId || ''}_${payload.offerId || ''}`;
+  const now = Date.now();
+  const lastTime = eventThrottleMap.get(throttleKey) || 0;
+  if (now - lastTime < 3000) {
+    return;
+  }
+  eventThrottleMap.set(throttleKey, now);
+
   console.log(`[Nooki Analytics] Event: ${eventType}`, payload);
   await sendToAnalyticsApi('event', {
     eventType,

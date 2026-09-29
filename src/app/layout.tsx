@@ -32,7 +32,9 @@ export default function RootLayout({
   return (
     <html lang="ru" className={inter.variable}>
       <body className="font-sans antialiased min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
-        {children}
+        <div id="root" className="min-h-screen flex flex-col">
+          {children}
+        </div>
       </body>
     </html>
   );

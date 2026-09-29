@@ -1,17 +1,46 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { AppProvider, useApp } from '@/context/AppContext';
 import { Header } from '@/components/Header';
 import { StudentView } from '@/components/student/StudentView';
-import { CashierView } from '@/components/cashier/CashierView';
-import { UnifiedCityMap } from '@/components/map/UnifiedCityMap';
-import { FeedbackModal } from '@/components/FeedbackModal';
 import { NookiLogo } from '@/components/NookiLogo';
 import { Heart, Flame, MapPin, Store } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
-
 import { QrModal } from '@/components/student/QrModal';
+
+// Code splitting (React.lazy) for heavy components to minimize initial bundle size and transfer
+const UnifiedCityMap = dynamic(
+  () => import('@/components/map/UnifiedCityMap').then((mod) => mod.UnifiedCityMap),
+  {
+    loading: () => (
+      <div className="w-full max-w-[1600px] mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[500px]">
+        <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-3" />
+        <p className="text-xs text-slate-400 font-medium">Загрузка карты инфраструктуры...</p>
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const CashierView = dynamic(
+  () => import('@/components/cashier/CashierView').then((mod) => mod.CashierView),
+  {
+    loading: () => (
+      <div className="w-full max-w-[1600px] mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[300px]">
+        <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-3" />
+        <p className="text-xs text-slate-400 font-medium">Загрузка терминала кассира...</p>
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const FeedbackModal = dynamic(
+  () => import('@/components/FeedbackModal').then((mod) => mod.FeedbackModal),
+  { ssr: false }
+);
 
 function AppContent() {
   const { role, setRole, studentTab, setStudentTab } = useApp();

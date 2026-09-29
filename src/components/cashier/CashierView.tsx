@@ -127,10 +127,6 @@ export const CashierView: React.FC = () => {
                   </p>
                 </div>
               </div>
-
-              <span className="text-[11px] bg-emerald-50 text-emerald-700 font-bold px-3 py-1 rounded-full border border-emerald-200 shrink-0 whitespace-nowrap">
-                Терминал готов
-              </span>
             </div>
 
             {/* Input Controls */}
@@ -365,14 +361,6 @@ export const CashierView: React.FC = () => {
                   </p>
                 </div>
               </div>
-
-              <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shrink-0 ${
-                urboHappyHoursActive 
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                  : 'bg-slate-100 text-slate-600 border border-slate-200'
-              }`}>
-                {urboHappyHoursActive ? 'В эфире' : 'Пауза'}
-              </span>
             </div>
 
             <div className="space-y-2">

@@ -200,7 +200,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
             <button
               type="button"
               onClick={handleClose}
-              className="w-full bg-slate-900 hover:bg-slate-800 active:scale-98 text-white font-bold text-xs py-3 rounded-xl transition shadow-sm"
+              className="w-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-xs py-3.5 rounded-xl transition shadow-md shadow-blue-500/20"
             >
               Отлично
             </button>
