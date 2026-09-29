@@ -140,7 +140,7 @@ export const StudentView: React.FC = () => {
       <div className="relative mb-8 sm:mb-12 rounded-[32px] sm:rounded-[44px] overflow-hidden border border-slate-200/90 shadow-[0_8px_30px_rgb(0,0,0,0.06)] min-h-[360px] sm:min-h-[440px] lg:min-h-[480px] flex flex-col justify-center items-center py-10 sm:py-16 px-4 sm:px-8">
         {/* Background Mascot Image */}
         <img
-          src="/Kangaroo_mascot_wearing_sunglasses_20260929171723.jpg"
+          src="/Kangaroo_mascot_wearing_sunglasses_20260929171723.webp"
           alt="Nooki — Скидки в тихие часы"
           className="absolute inset-0 w-full h-full object-cover object-center"
           loading="eager"
@@ -293,7 +293,7 @@ export const StudentView: React.FC = () => {
                   src={offer.image}
                   alt={offer.title}
                   onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = '/partners/torte-studio.jpg';
+                    (e.currentTarget as HTMLImageElement).src = '/partners/torte-studio.webp';
                   }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-95"
                 />
