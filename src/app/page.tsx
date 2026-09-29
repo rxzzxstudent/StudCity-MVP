@@ -26,7 +26,7 @@ function AppContent() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 w-full max-w-full overflow-x-hidden pb-16 sm:pb-0">
+    <div className="min-h-screen flex flex-col bg-slate-50 w-full max-w-full overflow-x-hidden pb-24 sm:pb-0">
       <Header onOpenFeedback={() => setFeedbackOpen(true)} />
       
       <main className="flex-1 w-full max-w-full">
@@ -55,55 +55,95 @@ function AppContent() {
       </footer>
 
       {/* Floating Mobile Bottom Navigation Bar for Telegram Mini App & Phones */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 py-2 px-4 flex items-center justify-around shadow-lg">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/90 px-3 py-2 pb-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] flex items-center justify-around">
+        {/* 1. Offers / Slots Tab */}
         <button
           onClick={() => {
             setRole('student');
             setStudentTab('offers');
           }}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold transition ${
-            role === 'student' && studentTab === 'offers'
-              ? 'text-blue-600 scale-105'
-              : 'text-slate-500 hover:text-slate-800'
-          }`}
+          className="flex flex-col items-center gap-1 min-w-[64px] py-1 cursor-pointer transition active:scale-95 group"
         >
-          <Flame className="w-4 h-4" />
-          <span>Слоты</span>
+          <div className={`w-12 h-7.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+            role === 'student' && studentTab === 'offers'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 -translate-y-0.5'
+              : 'text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-800'
+          }`}>
+            <Flame className="w-4 h-4" />
+          </div>
+          <span className={`text-[11px] tracking-tight transition-colors ${
+            role === 'student' && studentTab === 'offers'
+              ? 'font-black text-blue-600'
+              : 'font-semibold text-slate-500'
+          }`}>
+            Скидки
+          </span>
         </button>
 
+        {/* 2. Map Tab */}
         <button
           onClick={() => {
             setRole('student');
             setStudentTab('map');
           }}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold transition ${
+          className="flex flex-col items-center gap-1 min-w-[64px] py-1 cursor-pointer transition active:scale-95 group"
+        >
+          <div className={`w-12 h-7.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
             role === 'student' && studentTab === 'map'
-              ? 'text-blue-600 scale-105'
-              : 'text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <MapPin className="w-4 h-4" />
-          <span>Карта</span>
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 -translate-y-0.5'
+              : 'text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-800'
+          }`}>
+            <MapPin className="w-4 h-4" />
+          </div>
+          <span className={`text-[11px] tracking-tight transition-colors ${
+            role === 'student' && studentTab === 'map'
+              ? 'font-black text-blue-600'
+              : 'font-semibold text-slate-500'
+          }`}>
+            Карта
+          </span>
         </button>
 
-        <button
-          onClick={() => setFeedbackOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-500 hover:text-slate-800 transition"
-        >
-          <MessageSquareHeart className="w-4 h-4 text-pink-500" />
-          <span>Отзыв</span>
-        </button>
-
+        {/* 3. Cashier Tab */}
         <button
           onClick={() => setRole('cashier')}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold transition ${
-            role === 'cashier'
-              ? 'text-blue-600 scale-105'
-              : 'text-slate-500 hover:text-slate-800'
-          }`}
+          className="flex flex-col items-center gap-1 min-w-[64px] py-1 cursor-pointer transition active:scale-95 group"
         >
-          <Store className="w-4 h-4" />
-          <span>Касса</span>
+          <div className={`w-12 h-7.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+            role === 'cashier'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 -translate-y-0.5'
+              : 'text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-800'
+          }`}>
+            <Store className="w-4 h-4" />
+          </div>
+          <span className={`text-[11px] tracking-tight transition-colors ${
+            role === 'cashier'
+              ? 'font-black text-blue-600'
+              : 'font-semibold text-slate-500'
+          }`}>
+            Касса
+          </span>
+        </button>
+
+        {/* 4. Feedback Tab */}
+        <button
+          onClick={() => setFeedbackOpen(true)}
+          className="flex flex-col items-center gap-1 min-w-[64px] py-1 cursor-pointer transition active:scale-95 group"
+        >
+          <div className={`w-12 h-7.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+            feedbackOpen
+              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/30 -translate-y-0.5'
+              : 'text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-800'
+          }`}>
+            <MessageSquareHeart className="w-4 h-4" />
+          </div>
+          <span className={`text-[11px] tracking-tight transition-colors ${
+            feedbackOpen
+              ? 'font-black text-pink-600'
+              : 'font-semibold text-slate-500'
+          }`}>
+            Отзыв
+          </span>
         </button>
       </nav>
 
