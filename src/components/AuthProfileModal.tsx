@@ -55,8 +55,6 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
     setMounted(true);
   }, []);
 
-  if (!isOpen || !mounted) return null;
-
   // Sanitization against XSS & injections
   const sanitizeInput = (val: string) => val.trim().replace(/[<>'"`;()]/g, '');
 
@@ -299,6 +297,8 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
       setLoading(false);
     }
   };
+
+  if (!isOpen || !mounted) return null;
 
   return (
     <div 
