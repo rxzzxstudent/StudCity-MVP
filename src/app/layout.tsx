@@ -10,15 +10,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Nooki — Смарт-доступ к непиковым слотам & Карта города',
   description: 'Nooki — единый городской сервис смарт-доступа к непиковым слотам заведений со скидками и бесплатная карта городской инфраструктуры.',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Nooki',
-  },
-  other: {
-    'mobile-web-app-capable': 'yes',
-  },
   icons: {
     icon: '/icon.svg?v=2',
     shortcut: '/icon.svg?v=2',
@@ -27,13 +18,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: 'cover',
-  interactiveWidget: 'resizes-content',
 };
 
 export default function RootLayout({
