@@ -35,7 +35,7 @@ const LeafletMapInner = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[350px] sm:h-[680px] rounded-3xl bg-slate-100/80 animate-pulse flex flex-col items-center justify-center text-slate-400 gap-2 border border-slate-200">
+      <div className="w-full h-[420px] sm:h-[680px] rounded-3xl bg-slate-100/80 animate-pulse flex flex-col items-center justify-center text-slate-400 gap-2 border border-slate-200">
         <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
           <Layers className="w-5 h-5 animate-spin" />
         </div>
@@ -371,7 +371,7 @@ export const UnifiedCityMap: React.FC = () => {
       </div>
 
       {/* 2. Main Map Canvas (Full-Width, Responsive for mobile, laptops & desktops) */}
-      <div className="relative w-full h-[50vh] sm:h-[65vh] min-h-[350px] sm:min-h-[460px] max-h-[750px] rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
+      <div className="relative w-full h-[58vh] sm:h-[65vh] min-h-[420px] sm:min-h-[460px] max-h-[750px] rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
         <LeafletMapInner
           spots={filteredSpots}
           selectedSpot={selectedMapSpot}

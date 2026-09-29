@@ -26,7 +26,9 @@ function AppContent() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 w-full max-w-full overflow-x-hidden pb-24 sm:pb-0">
+    <div className={`min-h-screen flex flex-col bg-slate-50 w-full max-w-full overflow-x-hidden ${
+      role === 'student' && studentTab === 'map' ? 'pb-20 sm:pb-0' : 'pb-24 sm:pb-0'
+    }`}>
       <Header onOpenFeedback={() => setFeedbackOpen(true)} />
       
       <main className="flex-1 w-full max-w-full">
