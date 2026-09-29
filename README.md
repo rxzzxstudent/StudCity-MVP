@@ -5,9 +5,21 @@
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-Vanilla_Styled-38bdf8?logo=tailwind-css)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Auth_&_DB-3ecf8e?logo=supabase)](https://supabase.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-Zero_Backend_Deploy-black?logo=vercel)](https://vercel.com/)
-[![Telegram](https://img.shields.io/badge/Telegram_Bot-Serverless_Webhook-229ED9?logo=telegram)](https://telegram.org/)
+[![Telegram](https://img.shields.io/badge/Telegram_Bot-wn__nooki__bot-229ED9?logo=telegram)](https://t.me/wn_nooki_bot)
 
-Nooki — двусторонняя цифровая экосистема динамического ценообразования для локального бизнеса и бесплатная карта городской инфраструктуры для жителей и студентов.
+- Веб-сайт проекта: https://studcitymvpproject.vercel.app/
+- Telegram-бот: https://t.me/wn_nooki_bot 
+
+---
+
+## Важное обновление: Переход от StudCity к Nooki
+
+Команда проекта провела стратегический ребрендинг и масштабирование:
+- Первоначальная концепция StudCity была сфокусирована исключительно на студенческой аудитории вокруг университетских кампусов.
+- В ходе валидации гипотез и тестирования мы расширили продукт до **Nooki** — единого городского сервиса для всех жителей и гостей Алматы (горожан, офисных сотрудников, фрилансеров и студентов).
+- Проблема поиска выгодных предложений на обеды, спорт и услуги в «тихие часы», а также потребность в навигаторе по городской инфраструктуре (Wi-Fi, розетки для зарядки, санузлы) актуальна для всего города Алматы.
+
+Nooki — двусторонняя цифровая экосистема динамического ценообразования для локального бизнеса и бесплатная карта городской инфраструктуры для всех жителей города.
 
 Сервис позволяет заведениям заполнять непиковые часы клиентами со скидками до 50% без риска для основного чека, а горожанам — экономить и находить проверенные места с Wi-Fi, розетками и санузлами.
 
