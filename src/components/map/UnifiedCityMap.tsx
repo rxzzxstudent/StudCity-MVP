@@ -15,7 +15,6 @@ import {
   Check, 
   ChevronRight, 
   Navigation,
-  Image as ImageIcon,
   Trash2,
   CheckCircle2,
   Maximize2,
@@ -70,7 +69,6 @@ export const UnifiedCityMap: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyFree, setOnlyFree] = useState(false);
-  const [onlyWithPhoto, setOnlyWithPhoto] = useState(false);
   const [isAddMode, setIsAddMode] = useState(false);
   const [showListDrawer, setShowListDrawer] = useState(false);
   const [campusDropdownOpen, setCampusDropdownOpen] = useState(false);
@@ -114,7 +112,6 @@ export const UnifiedCityMap: React.FC = () => {
     return mapSpots.filter((spot) => {
       if (!activeMapFilters.includes(spot.category)) return false;
       if (onlyFree && !spot.isFree) return false;
-      if (onlyWithPhoto && !spot.imageUrl) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchTitle = spot.title.toLowerCase().includes(q);
@@ -125,7 +122,7 @@ export const UnifiedCityMap: React.FC = () => {
       }
       return true;
     });
-  }, [mapSpots, activeMapFilters, onlyFree, onlyWithPhoto, searchQuery]);
+  }, [mapSpots, activeMapFilters, onlyFree, searchQuery]);
 
   // Counts
   const counts = useMemo(() => {
@@ -187,7 +184,7 @@ export const UnifiedCityMap: React.FC = () => {
       )}
 
       {/* 1. Compact Unified Control Bar (Lightweight & Uncluttered) */}
-      <div className="bg-white rounded-2xl p-2 sm:p-2.5 border border-slate-200 shadow-xs mb-3 space-y-2">
+      <div className="bg-white rounded-2xl p-2 sm:p-2.5 border border-slate-200 shadow-xs mb-3 space-y-2 relative z-30">
         {/* Top Row: Search, Campus Jump, Quick Toggles & Add Button */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
           {/* Search Box */}
@@ -211,35 +208,37 @@ export const UnifiedCityMap: React.FC = () => {
           </div>
 
           {/* Quick Actions & Toggles */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar justify-between sm:justify-end">
+          <div className="flex items-center gap-1.5 justify-between sm:justify-end shrink-0 relative">
             {/* Districts / Areas Dropdown */}
             <div className="relative shrink-0" ref={campusDropdownRef}>
               <button
                 type="button"
-                onClick={() => setCampusDropdownOpen(!campusDropdownOpen)}
+                onClick={() => setCampusDropdownOpen((prev) => !prev)}
                 className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-extrabold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition cursor-pointer"
                 title="Быстрый переход по районам Алматы"
               >
                 <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <span>Районы</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
+                <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${campusDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {campusDropdownOpen && (
-                <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-48 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-1.5 z-50 animate-fade-in space-y-0.5">
+                <div className="absolute left-0 top-full mt-1.5 w-52 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-1.5 z-50 animate-fade-in space-y-0.5">
                   <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Быстрый переход:
                   </div>
                   {CLUSTER_PRESETS.map((cluster) => (
                     <button
                       key={cluster.name}
+                      type="button"
                       onClick={() => {
                         setCenterCoords({ lat: cluster.lat, lng: cluster.lng, zoom: cluster.zoom });
                         setCampusDropdownOpen(false);
                       }}
-                      className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition cursor-pointer"
+                      className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition cursor-pointer flex items-center justify-between"
                     >
-                      {cluster.name}
+                      <span>{cluster.name}</span>
+                      <span className="text-[10px] text-slate-400">→</span>
                     </button>
                   ))}
                 </div>
@@ -356,19 +355,6 @@ export const UnifiedCityMap: React.FC = () => {
             <span>🖨️</span>
             <span>Печать</span>
             <span className="text-[10px] opacity-70 font-semibold">{counts.print}</span>
-          </button>
-
-          {/* With photo pill */}
-          <button
-            onClick={() => setOnlyWithPhoto(!onlyWithPhoto)}
-            className={`ml-auto flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg border transition shrink-0 ${
-              onlyWithPhoto
-                ? 'bg-indigo-50 text-indigo-700 border-indigo-300'
-                : 'text-slate-500 border-transparent hover:text-slate-800'
-            }`}
-          >
-            <ImageIcon className="w-3 h-3 text-indigo-600" />
-            <span>С фото</span>
           </button>
         </div>
       </div>

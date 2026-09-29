@@ -17,10 +17,8 @@ import {
   ArrowRight,
   TrendingDown,
   Building2,
-  Camera,
   Store
 } from 'lucide-react';
-import { ScannerModal } from './ScannerModal';
 
 export const CashierView: React.FC = () => {
   const {
@@ -36,7 +34,6 @@ export const CashierView: React.FC = () => {
   } = useApp();
 
   const [selectedVenueId, setSelectedVenueId] = useState<string>('coffeemoon-cafe');
-  const [scannerOpen, setScannerOpen] = useState(false);
   const [inputCode, setInputCode] = useState<string>(activeStudentCode ? activeStudentCode.code : '7492');
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -181,20 +178,13 @@ export const CashierView: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div>
                 <button
                   onClick={() => handleValidate()}
-                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-md shadow-blue-500/20 transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                  className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-blue-500/20 transition cursor-pointer flex items-center justify-center gap-2 shrink-0"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Проверить</span>
-                </button>
-                <button
-                  onClick={() => setScannerOpen(true)}
-                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer flex items-center justify-center gap-1.5 border border-slate-200"
-                >
-                  <Camera className="w-4 h-4 text-blue-600" />
-                  <span>Сканер</span>
+                  <span>Проверить PIN-код</span>
                 </button>
               </div>
 
@@ -501,16 +491,6 @@ export const CashierView: React.FC = () => {
         </div>
       </div>
 
-      {/* Terminal QR / Camera Scanner Modal */}
-      <ScannerModal
-        isOpen={scannerOpen}
-        onClose={() => setScannerOpen(false)}
-        onScanSuccess={(scannedCode) => {
-          setInputCode(scannedCode);
-          setScannerOpen(false);
-          handleValidate(scannedCode);
-        }}
-      />
     </div>
   );
 };
