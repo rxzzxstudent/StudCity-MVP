@@ -353,7 +353,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 truncate mt-0.5">
-                  @{currentUser.email.replace('@studcity.internal', '')}
+                  @{currentUser?.email ? currentUser.email.replace('@studcity.internal', '') : (currentUser?.displayName || 'user')}
                 </p>
               </div>
             </div>

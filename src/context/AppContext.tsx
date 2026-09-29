@@ -333,9 +333,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const savedAuth = localStorage.getItem('nooki_auth_user');
         if (savedAuth) {
           const parsed = JSON.parse(savedAuth);
-          if (parsed && parsed.role) {
-            setCurrentUser(parsed);
-            setRole(parsed.role);
+          if (parsed && typeof parsed === 'object') {
+            const sanitizedUser: UserProfile = {
+              id: parsed.id || `usr_${Date.now()}`,
+              email: parsed.email || parsed.displayName || 'user',
+              displayName: parsed.displayName || parsed.email || 'Пользователь',
+              role: parsed.role === 'cashier' ? 'cashier' : 'student',
+              venueName: parsed.venueName,
+            };
+            setCurrentUser(sanitizedUser);
+            setRole(sanitizedUser.role);
           }
         }
       } catch {
