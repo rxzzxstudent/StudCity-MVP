@@ -212,20 +212,21 @@ export const UnifiedCityMap: React.FC = () => {
 
           {/* Quick Actions & Toggles */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar justify-between sm:justify-end">
-            {/* Campus Dropdown */}
+            {/* Districts / Areas Dropdown */}
             <div className="relative shrink-0" ref={campusDropdownRef}>
               <button
                 type="button"
                 onClick={() => setCampusDropdownOpen(!campusDropdownOpen)}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-extrabold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition cursor-pointer"
+                title="Быстрый переход по районам Алматы"
               >
                 <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span className="hidden xs:inline">Кампусы</span>
+                <span>Районы</span>
                 <ChevronDown className="w-3 h-3 text-slate-400" />
               </button>
 
               {campusDropdownOpen && (
-                <div className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 z-40 animate-fade-in space-y-0.5">
+                <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-48 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-1.5 z-50 animate-fade-in space-y-0.5">
                   <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Быстрый переход:
                   </div>
@@ -236,7 +237,7 @@ export const UnifiedCityMap: React.FC = () => {
                         setCenterCoords({ lat: cluster.lat, lng: cluster.lng, zoom: cluster.zoom });
                         setCampusDropdownOpen(false);
                       }}
-                      className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
+                      className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition cursor-pointer"
                     >
                       {cluster.name}
                     </button>
@@ -245,16 +246,18 @@ export const UnifiedCityMap: React.FC = () => {
               )}
             </div>
 
-            {/* Only Free pill */}
+            {/* Only Free pill (Green & Attractive) */}
             <button
+              type="button"
               onClick={() => setOnlyFree(!onlyFree)}
-              className={`text-xs font-bold px-2 sm:px-2.5 py-1.5 rounded-xl border transition shrink-0 ${
+              className={`text-xs font-extrabold px-2.5 sm:px-3 py-1.5 rounded-xl border transition shrink-0 flex items-center gap-1 cursor-pointer ${
                 onlyFree
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                  : 'bg-slate-50 text-slate-600 border-slate-200/80 hover:bg-slate-100'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                  : 'bg-emerald-50 text-emerald-800 border-emerald-200/80 hover:bg-emerald-100'
               }`}
+              title="Показать только бесплатные локации"
             >
-              0 ₸
+              <span>Бесплатно</span>
             </button>
 
             {/* List Drawer Toggle Button */}
@@ -623,9 +626,15 @@ export const UnifiedCityMap: React.FC = () => {
                     </div>
                   </div>
 
-                  <span className="text-[10px] font-bold shrink-0 text-slate-700 bg-white px-1.5 py-0.5 rounded-md border border-slate-200">
-                    {spot.isFree ? '0 ₸' : spot.price ? `${spot.price} ₸` : 'Платно'}
-                  </span>
+                  {spot.isFree ? (
+                    <span className="text-[10px] font-extrabold shrink-0 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      Бесплатно
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold shrink-0 text-slate-700 bg-white px-1.5 py-0.5 rounded-md border border-slate-200">
+                      {spot.price ? `${spot.price} ₸` : 'Платно'}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -641,6 +650,11 @@ export const UnifiedCityMap: React.FC = () => {
           setIsAddMode(false);
         }}
         initialCoords={addCoords}
+        onPickOnMap={() => {
+          setAddModalOpen(false);
+          setIsAddMode(true);
+          showToast('Кликните на карту в нужное место для установки метки 📍');
+        }}
         onAddSpot={(newSpot) => {
           addMapSpot(newSpot);
           setIsAddMode(false);

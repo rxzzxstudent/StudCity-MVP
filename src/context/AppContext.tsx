@@ -457,6 +457,89 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [activeStudentCode, codeTimeRemaining]);
 
+  // 3. PIN Registry to ensure only real, non-expired, non-redeemed PINs can be redeemed
+  const [issuedPins, setIssuedPins] = useState<Array<{
+    code: string;
+    venueId: string;
+    venueName: string;
+    discountPercent: number;
+    finalPrice: number;
+    originalPrice: number;
+    expiresAt: number;
+    isRedeemed: boolean;
+  }>>([
+    {
+      code: '7492',
+      venueId: 'coffeemoon-cafe',
+      venueName: 'Coffee Moon — Cafe & Wine',
+      discountPercent: 40,
+      finalPrice: 1600,
+      originalPrice: 2800,
+      expiresAt: Date.now() + 86400 * 1000,
+      isRedeemed: false,
+    },
+    {
+      code: '4821',
+      venueId: 'taza-doner-combo',
+      venueName: 'Taza Doner & Grill',
+      discountPercent: 37,
+      finalPrice: 1200,
+      originalPrice: 1900,
+      expiresAt: Date.now() + 86400 * 1000,
+      isRedeemed: false,
+    },
+    {
+      code: '5044',
+      venueId: 'smart-service',
+      venueName: 'Smart Service',
+      discountPercent: 20,
+      finalPrice: 4800,
+      originalPrice: 6000,
+      expiresAt: Date.now() + 86400 * 1000,
+      isRedeemed: false,
+    },
+  ]);
+
+  // Load issued pins from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('nooki_issued_pins');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setIssuedPins((prev) => [...parsed, ...prev.filter((p) => !parsed.some((x: any) => x.code === p.code))]);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
+
+  const saveIssuedPin = (record: {
+    code: string;
+    venueId: string;
+    venueName: string;
+    discountPercent: number;
+    finalPrice: number;
+    originalPrice: number;
+    expiresAt: number;
+    isRedeemed: boolean;
+  }) => {
+    setIssuedPins((prev) => {
+      const updated = [record, ...prev.filter((p) => p.code !== record.code)];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('nooki_issued_pins', JSON.stringify(updated.slice(0, 50)));
+        } catch {
+          // ignore
+        }
+      }
+      return updated;
+    });
+  };
+
   const generateRandomCode = () => {
     const num = Math.floor(1000 + Math.random() * 9000);
     return `${num}`;
@@ -464,8 +547,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const openQrModal = (offer: VenueOffer) => {
     setActiveOfferForQr(offer);
+    const codeStr = generateRandomCode();
     const newCode: StudentCode = {
-      code: generateRandomCode(),
+      code: codeStr,
       venueId: offer.id,
       venueName: offer.name,
       discountPercent: offer.discountPercent,
@@ -479,6 +563,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
     setActiveStudentCode(newCode);
     setCodeTimeRemaining(300);
+
+    // Register PIN in the verified active registry
+    saveIssuedPin({
+      code: codeStr,
+      venueId: offer.id,
+      venueName: offer.name,
+      discountPercent: offer.discountPercent,
+      finalPrice: offer.discountedPrice,
+      originalPrice: offer.originalPrice,
+      expiresAt: Date.now() + 300 * 1000,
+      isRedeemed: false,
+    });
+
     trackEvent('pin_generated', {
       venueId: offer.id,
       offerId: offer.id,
@@ -493,8 +590,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const generateNewCode = () => {
     if (!activeOfferForQr) return;
+    const codeStr = generateRandomCode();
     const newCode: StudentCode = {
-      code: generateRandomCode(),
+      code: codeStr,
       venueId: activeOfferForQr.id,
       venueName: activeOfferForQr.name,
       discountPercent: activeOfferForQr.discountPercent,
@@ -508,6 +606,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
     setActiveStudentCode(newCode);
     setCodeTimeRemaining(300);
+
+    saveIssuedPin({
+      code: codeStr,
+      venueId: activeOfferForQr.id,
+      venueName: activeOfferForQr.name,
+      discountPercent: activeOfferForQr.discountPercent,
+      finalPrice: activeOfferForQr.discountedPrice,
+      originalPrice: activeOfferForQr.originalPrice,
+      expiresAt: Date.now() + 300 * 1000,
+      isRedeemed: false,
+    });
   };
 
   const toggleUrboHappyHours = () => {
@@ -518,7 +627,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const raw = codeToValidate.trim().toUpperCase();
     const cleanDigits = raw.replace(/[^0-9]/g, '');
     if (!raw || cleanDigits.length < 4) {
-      const res = { success: false, message: 'Пожалуйста, введите 4-значный PIN код студента (например, 7492)' };
+      const res = { success: false, message: 'Пожалуйста, введите 4-значный PIN код (например, 7492)' };
       setLastValidatedCode(res);
       return res;
     }
@@ -526,57 +635,92 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const pinInput = cleanDigits.slice(0, 4);
     const targetOffer = offers.find((o) => o.id === (targetVenueId || 'coffeemoon-cafe')) || offers[0];
 
-    let matchedCodeData: StudentCode;
+    // Look up PIN in authentic registry
+    const registeredPin =
+      issuedPins.find((p) => p.code === pinInput) ||
+      (activeStudentCode && activeStudentCode.code === pinInput
+        ? {
+            code: activeStudentCode.code,
+            venueId: activeStudentCode.venueId,
+            venueName: activeStudentCode.venueName,
+            discountPercent: activeStudentCode.discountPercent,
+            finalPrice: activeStudentCode.finalPrice,
+            originalPrice: activeStudentCode.originalPrice,
+            expiresAt: activeStudentCode.createdAt + 300 * 1000,
+            isRedeemed: false,
+          }
+        : null);
 
-    const currentCodeRaw = activeStudentCode?.code || '';
-    const currentCodeClean = (currentCodeRaw.replace(/[^0-9]/g, '') || '').slice(0, 4);
-
-    if (activeStudentCode) {
-      if (pinInput !== currentCodeClean) {
-        const res = {
-          success: false,
-          message: `Неверный PIN-код. Активный код студента: ${activeStudentCode.code}`,
-        };
-        setLastValidatedCode(res);
-        return res;
-      }
-
-      if (targetVenueId && activeStudentCode.venueId !== targetVenueId) {
-        const res = {
-          success: false,
-          message: `Этот PIN выпущен для заведения «${activeStudentCode.venueName}», а не для «${targetOffer.name}»!`,
-        };
-        setLastValidatedCode(res);
-        return res;
-      }
-
-      if (codeTimeRemaining <= 0) {
-        const res = {
-          success: false,
-          message: 'Срок действия 4-значного PIN-кода (5 минут) истек. Попросите гостя выпустить новый PIN.',
-        };
-        setLastValidatedCode(res);
-        return res;
-      }
-
-      matchedCodeData = activeStudentCode;
-      // Mark code as used (single-use token)
-      setActiveStudentCode(null);
-    } else {
-      matchedCodeData = {
-        code: pinInput,
-        venueId: targetOffer.id,
-        venueName: targetOffer.name,
-        discountPercent: targetOffer.discountPercent,
-        finalPrice: targetOffer.discountedPrice,
-        originalPrice: targetOffer.originalPrice,
-        createdAt: Date.now(),
-        expiresInSeconds: 300,
-        studentName: 'Горожанин Nooki',
-        studentUni: 'Студент / Горожанин',
-        isValid: true,
+    // 1. PIN NOT FOUND (e.g. user typed random numbers 0000, 1234, 9999)
+    if (!registeredPin) {
+      const res = {
+        success: false,
+        message: `PIN-код «${pinInput}» не найден в системе Nooki. Убедитесь, что гость сгенерировал его на сайте или в Telegram-боте.`,
       };
+      setLastValidatedCode(res);
+      return res;
     }
+
+    // 2. PIN ALREADY REDEEMED (Prevent double spending)
+    if (registeredPin.isRedeemed) {
+      const res = {
+        success: false,
+        message: `PIN-код «${pinInput}» уже был погашен на кассе ранее и больше недействителен!`,
+      };
+      setLastValidatedCode(res);
+      return res;
+    }
+
+    // 3. PIN EXPIRED (5-min window)
+    if (Date.now() > registeredPin.expiresAt) {
+      const res = {
+        success: false,
+        message: `Срок действия PIN-кода «${pinInput}» (5 минут) истек. Попросите гостя выпустить новый код.`,
+      };
+      setLastValidatedCode(res);
+      return res;
+    }
+
+    // 4. VENUE MISMATCH
+    if (targetVenueId && registeredPin.venueId !== targetVenueId) {
+      const res = {
+        success: false,
+        message: `Этот PIN выпущен для заведения «${registeredPin.venueName}», а не для кассы «${targetOffer.name}»!`,
+      };
+      setLastValidatedCode(res);
+      return res;
+    }
+
+    // Mark as redeemed in registry
+    setIssuedPins((prev) => {
+      const updated = prev.map((p) => (p.code === pinInput ? { ...p, isRedeemed: true } : p));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('nooki_issued_pins', JSON.stringify(updated.slice(0, 50)));
+        } catch {
+          // ignore
+        }
+      }
+      return updated;
+    });
+
+    if (activeStudentCode && activeStudentCode.code === pinInput) {
+      setActiveStudentCode(null);
+    }
+
+    const matchedCodeData: StudentCode = {
+      code: registeredPin.code,
+      venueId: registeredPin.venueId,
+      venueName: registeredPin.venueName,
+      discountPercent: registeredPin.discountPercent,
+      finalPrice: registeredPin.finalPrice,
+      originalPrice: registeredPin.originalPrice,
+      createdAt: Date.now(),
+      expiresInSeconds: 300,
+      studentName: 'Горожанин Nooki',
+      studentUni: 'Студент / Горожанин',
+      isValid: true,
+    };
 
     // Decrement slots remaining on the offer
     setOffers((prev) =>
