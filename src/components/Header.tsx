@@ -1,9 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
-import { GraduationCap, Store, Sparkles, MapPin, Flame, MessageSquareHeart } from 'lucide-react';
-import { NookiLogo } from './NookiLogo';
+import { 
+  Store, 
+  MapPin, 
+  Flame, 
+  MessageSquareHeart, 
+  Menu, 
+  X 
+} from 'lucide-react';
 
 interface HeaderProps {
   onOpenFeedback?: () => void;
@@ -13,21 +19,51 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFeedback }) => {
   const { 
     role, 
     setRole, 
-    studentTab,
-    setStudentTab,
+    studentTab, 
+    setStudentTab 
   } = useApp();
 
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Click outside and Escape handler
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 shadow-xs w-full max-w-full">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-xs w-full max-w-full">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className="flex items-center justify-between h-16 sm:h-18 gap-4">
+        <div className="flex items-center justify-between h-16 sm:h-18 gap-3">
           
           {/* Brand Logo */}
           <div className="flex items-center gap-3">
             <button 
+              type="button"
               onClick={() => {
                 setRole('student');
                 setStudentTab('offers');
+                setIsOpen(false);
               }}
               title="Nooki — Главная"
               className="flex items-center gap-2.5 shrink-0 group text-left focus:outline-hidden"
@@ -43,9 +79,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFeedback }) => {
             </button>
           </div>
 
-          {/* Center: Main View Navigation (Harmonious Brand Color Style) */}
+          {/* Center: Desktop Navigation */}
           <nav className="hidden sm:flex items-center gap-8 text-xs sm:text-sm font-semibold">
             <button
+              type="button"
               onClick={() => {
                 setRole('student');
                 setStudentTab('offers');
@@ -63,6 +100,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFeedback }) => {
             </button>
 
             <button
+              type="button"
               onClick={() => {
                 setRole('student');
                 setStudentTab('map');
@@ -80,6 +118,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFeedback }) => {
             </button>
 
             <button
+              type="button"
               onClick={() => setRole('cashier')}
               className={`transition cursor-pointer relative py-1 ${
                 role === 'cashier'
@@ -94,17 +133,106 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFeedback }) => {
             </button>
           </nav>
 
-          {/* Right: Action Button (Brand Blue Pill Style) */}
-          <div className="flex items-center gap-3">
+          {/* Right: Actions & Compact Burger Dropdown */}
+          <div className="flex items-center gap-2 sm:gap-3">
             {onOpenFeedback && (
               <button
+                type="button"
                 onClick={onOpenFeedback}
                 title="Оставить отзыв о сервисе"
-                className="px-5 py-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5"
               >
+                <MessageSquareHeart className="w-3.5 h-3.5 sm:hidden" />
                 <span>Отзыв</span>
               </button>
             )}
+
+            {/* Mobile Dropdown Popover */}
+            <div className="relative sm:hidden" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setIsOpen((prev) => !prev)}
+                aria-label={isOpen ? 'Закрыть меню' : 'Открыть меню'}
+                className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200/80 active:scale-95 text-slate-800 flex items-center justify-center transition cursor-pointer border border-slate-200/70"
+              >
+                {isOpen ? (
+                  <X className="w-5 h-5 text-slate-900" />
+                ) : (
+                  <Menu className="w-5 h-5 text-slate-900" />
+                )}
+              </button>
+
+              {/* Compact Floating Dropdown (Does NOT cover the screen) */}
+              {isOpen && (
+                <div className="absolute right-0 top-full mt-2 w-60 bg-white/98 backdrop-blur-xl rounded-2xl border border-slate-200/90 shadow-xl shadow-slate-900/10 p-2 z-50 animate-scale-up space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRole('student');
+                      setStudentTab('offers');
+                      setIsOpen(false);
+                    }}
+                    className={`w-full px-3.5 py-2.5 rounded-xl flex items-center gap-2.5 text-left text-xs font-bold transition cursor-pointer ${
+                      role === 'student' && studentTab === 'offers'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Flame className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Скидки и слоты</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRole('student');
+                      setStudentTab('map');
+                      setIsOpen(false);
+                    }}
+                    className={`w-full px-3.5 py-2.5 rounded-xl flex items-center gap-2.5 text-left text-xs font-bold transition cursor-pointer ${
+                      role === 'student' && studentTab === 'map'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <MapPin className="w-4 h-4 text-blue-500 shrink-0" />
+                    <span>Карта города</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRole('cashier');
+                      setIsOpen(false);
+                    }}
+                    className={`w-full px-3.5 py-2.5 rounded-xl flex items-center gap-2.5 text-left text-xs font-bold transition cursor-pointer ${
+                      role === 'cashier'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Store className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Кассирам / B2B</span>
+                  </button>
+
+                  {onOpenFeedback && (
+                    <div className="pt-1 mt-1 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsOpen(false);
+                          onOpenFeedback();
+                        }}
+                        className="w-full px-3.5 py-2 rounded-xl flex items-center gap-2.5 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                      >
+                        <MessageSquareHeart className="w-4 h-4 text-pink-500 shrink-0" />
+                        <span>Оставить отзыв</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
