@@ -56,7 +56,7 @@ function AppContent() {
     });
   }, []);
 
-  const isBusinessUser = currentUser?.role === 'cashier' || role === 'cashier';
+  const isBusinessUser = currentUser?.role === 'cashier';
 
   return (
     <div className={`min-h-screen flex flex-col bg-slate-50 w-full max-w-full overflow-x-hidden ${
