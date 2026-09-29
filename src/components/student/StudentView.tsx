@@ -136,12 +136,12 @@ export const StudentView: React.FC = () => {
         <div className="relative z-10 text-center max-w-4xl mx-auto flex flex-col items-center">
           {/* Clean Hero Headline */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight text-center leading-[1.12] drop-shadow-md">
-            Скидки в тихие часы
+            Платите меньше там, где вас ждут прямо сейчас
           </h1>
 
           {/* Subtitle */}
           <p className="mt-3.5 sm:mt-5 text-sm sm:text-base lg:text-lg text-white/95 text-center max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-sm">
-            Заведения Алматы открывают свободные столы и смарт-слоты со скидкой до 50%. Забирайте 4-значный PIN за 3 секунды без сложной регистрации.
+            Заведения Алматы открывают специальные цены на часы низкой загрузки. Выбирайте кафе на карте, берите короткий PIN — и скидка уже в вашем чеке.
           </p>
 
           {/* Action Button (Pleasant Blue text, friendly white pill) */}

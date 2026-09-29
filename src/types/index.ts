@@ -58,6 +58,7 @@ export interface VenueOffer {
   quietHoursWindow?: string; // e.g. "14:00 – 16:30"
   slotsRemaining?: number; // e.g. 8
   totalSlots?: number; // e.g. 15
+  slotsTotal?: number; // alias for totalSlots
   groupDiscountText?: string; // e.g. "Вдвоем — по 1 000 ₸ с человека"
   image: string;
   iconName: string;

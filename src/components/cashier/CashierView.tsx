@@ -56,7 +56,7 @@ export const CashierView: React.FC = () => {
   const [discountPercent, setDiscountPercent] = useState(activeVenue.discountPercent);
   const [quietStart, setQuietStart] = useState('14:30');
   const [quietEnd, setQuietEnd] = useState('16:30');
-  const [dailySlots, setDailySlots] = useState(activeVenue.slotsTotal || 15);
+  const [dailySlots, setDailySlots] = useState(activeVenue.totalSlots || 15);
   const [builderSavedMessage, setBuilderSavedMessage] = useState(false);
 
   // Sync form when venue selection changes
@@ -69,7 +69,7 @@ export const CashierView: React.FC = () => {
       if (parts[0]) setQuietStart(parts[0]);
       if (parts[1]) setQuietEnd(parts[1]);
     }
-    if (activeVenue.slotsTotal) setDailySlots(activeVenue.slotsTotal);
+    if (activeVenue.totalSlots) setDailySlots(activeVenue.totalSlots);
   }, [activeVenue]);
 
   // Derived price for guest
@@ -122,7 +122,7 @@ export const CashierView: React.FC = () => {
       discountPercent,
       discountedPrice: calculatedDiscountedPrice,
       quietHoursWindow: windowStr,
-      slotsTotal: dailySlots,
+      totalSlots: dailySlots,
       slotsRemaining: dailySlots,
     });
 
@@ -520,7 +520,7 @@ export const CashierView: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between text-slate-600">
                     <span className="font-medium">Остаток слотов:</span>
-                    <span className="font-bold text-slate-900">{activeVenue.slotsRemaining ?? '—'} из {activeVenue.slotsTotal ?? '—'}</span>
+                    <span className="font-bold text-slate-900">{activeVenue.slotsRemaining ?? '—'} из {activeVenue.totalSlots ?? '—'}</span>
                   </div>
                   <div className="flex items-center justify-between text-slate-600">
                     <span className="font-medium">Тип валидации:</span>
