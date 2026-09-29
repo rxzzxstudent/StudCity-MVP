@@ -41,7 +41,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
   
   // Form fields
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [loginInput, setLoginInput] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [venueName, setVenueName] = useState('Coffee Moon');
@@ -61,18 +61,46 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
   // Sanitization against XSS & injections
   const sanitizeInput = (val: string) => val.trim().replace(/[<>'"`;()]/g, '');
 
+  const handleClose = () => {
+    setError(null);
+    setSuccessMessage(null);
+    setPassword('');
+    setConfirmPassword('');
+    onClose();
+  };
+
+  // Reset transient messages and sensitive inputs on open/close
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setSuccessMessage(null);
+      setPassword('');
+      setConfirmPassword('');
+      if (!currentUser) {
+        setMode('login');
+      }
+    }
+  }, [isOpen, currentUser]);
+
+  const switchMode = (newMode: 'login' | 'register') => {
+    setMode(newMode);
+    setError(null);
+    setSuccessMessage(null);
+    setPassword('');
+    setConfirmPassword('');
+  };
+
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
 
-    const cleanEmail = email.toLowerCase().trim();
+    const cleanLogin = sanitizeInput(loginInput).toLowerCase().trim().replace(/\s+/g, '');
     const cleanPassword = password.trim();
 
-    // 1. Strict validation
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(cleanEmail)) {
-      setError('Введите корректный адрес электронной почты (например: user@mail.kz)');
+    // 1. Validation
+    if (cleanLogin.length < 3) {
+      setError('Логин должен содержать не менее 3 символов (латиница или цифры)');
       return;
     }
 
@@ -86,7 +114,9 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
       return;
     }
 
-    const cleanDisplayName = sanitizeInput(name) || (cleanEmail.split('@')[0]);
+    // Virtual email for Supabase Auth engine compatibility
+    const authEmail = cleanLogin.includes('@') ? cleanLogin : `${cleanLogin}@studcity.internal`;
+    const cleanDisplayName = sanitizeInput(name) || cleanLogin;
 
     setLoading(true);
 
@@ -95,11 +125,12 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
       if (isSupabaseConfigured && supabase) {
         if (mode === 'register') {
           const { data, error: signUpError } = await supabase.auth.signUp({
-            email: cleanEmail,
+            email: authEmail,
             password: cleanPassword,
             options: {
               data: {
                 display_name: cleanDisplayName,
+                username: cleanLogin,
                 role: regRole === 'cashier' ? 'business' : 'user',
                 venue_name: regRole === 'cashier' ? venueName : undefined,
               },
@@ -107,7 +138,20 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
           });
 
           if (signUpError) {
-            setError(signUpError.message || 'Ошибка регистрации в Supabase');
+            const msg = signUpError.message.toLowerCase();
+            if (msg.includes('already registered') || msg.includes('user already exists')) {
+              setError('Пользователь с таким логином уже существует. Перейдите на вкладку «Вход».');
+            } else if (msg.includes('password')) {
+              setError('Пароль должен содержать минимум 6 символов.');
+            } else {
+              setError(signUpError.message || 'Ошибка регистрации в Supabase');
+            }
+            setLoading(false);
+            return;
+          }
+
+          if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+            setError('Пользователь с таким логином уже зарегистрирован. Перейдите на вкладку «Вход».');
             setLoading(false);
             return;
           }
@@ -115,37 +159,45 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
           const userId = data.user?.id || `usr_${Date.now()}`;
           setCurrentUser({
             id: userId,
-            email: cleanEmail,
+            email: cleanLogin,
             displayName: cleanDisplayName,
             role: regRole,
             venueName: regRole === 'cashier' ? venueName : undefined,
           });
 
           setSuccessMessage('Аккаунт успешно создан!');
+
           setTimeout(() => {
-            onClose();
+            handleClose();
           }, 1000);
           return;
         } else {
           // Login via Supabase
           const { data, error: signInError } = await supabase.auth.signInWithPassword({
-            email: cleanEmail,
+            email: authEmail,
             password: cleanPassword,
           });
 
           if (signInError) {
-            setError('Неверный email или пароль');
+            const msg = signInError.message.toLowerCase();
+            if (msg.includes('email not confirmed')) {
+              setError('Подтверждение почты не выполнено в Supabase. Примените SQL автоподтверждения или отключите Confirm email в настройках.');
+            } else if (msg.includes('invalid login credentials')) {
+              setError('Неверный логин или пароль. Проверьте правильность написания.');
+            } else {
+              setError(signInError.message);
+            }
             setLoading(false);
             return;
           }
 
           const rawRole = data.user?.user_metadata?.role;
           const userRole = rawRole === 'business' ? 'cashier' : 'student';
-          const userDisplayName = data.user?.user_metadata?.display_name || cleanEmail.split('@')[0];
+          const userDisplayName = data.user?.user_metadata?.display_name || cleanLogin;
 
           setCurrentUser({
             id: data.user?.id || `usr_${Date.now()}`,
-            email: cleanEmail,
+            email: cleanLogin,
             displayName: userDisplayName,
             role: userRole,
             venueName: data.user?.user_metadata?.venue_name,
@@ -153,27 +205,93 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
 
           setSuccessMessage('Успешный вход!');
           setTimeout(() => {
-            onClose();
-          }, 900);
+            handleClose();
+          }, 800);
           return;
         }
       }
 
       // 3. Graceful Local Fallback (For offline/testing without live keys)
-      const assignedRole = mode === 'register' ? regRole : (cleanEmail.includes('partner') || cleanEmail.includes('cafe') ? 'cashier' : 'student');
-      
-      setCurrentUser({
-        id: `local_${Math.random().toString(36).substring(2, 9)}`,
-        email: cleanEmail,
-        displayName: cleanDisplayName,
-        role: assignedRole,
-        venueName: assignedRole === 'cashier' ? venueName : undefined,
-      });
+      // Save/check registered users locally to provide realistic experience
+      const localUsersKey = 'nooki_local_users_db';
+      let localUsers: Array<{ login: string; pass: string; name: string; role: 'student' | 'cashier'; venueName?: string }> = [];
+      try {
+        const stored = localStorage.getItem(localUsersKey);
+        if (stored) localUsers = JSON.parse(stored);
+      } catch {
+        localUsers = [];
+      }
 
-      setSuccessMessage(mode === 'register' ? 'Аккаунт успешно создан!' : 'Вы успешно вошли в профиль!');
-      setTimeout(() => {
-        onClose();
-      }, 900);
+      if (mode === 'register') {
+        const exists = localUsers.find((u) => u.login === cleanLogin);
+        if (exists) {
+          setError('Пользователь с таким логином уже существует в локальной базе. Перейдите во вкладку «Вход».');
+          setLoading(false);
+          return;
+        }
+
+        localUsers.push({
+          login: cleanLogin,
+          pass: cleanPassword,
+          name: cleanDisplayName,
+          role: regRole,
+          venueName: regRole === 'cashier' ? venueName : undefined,
+        });
+        localStorage.setItem(localUsersKey, JSON.stringify(localUsers));
+
+        setCurrentUser({
+          id: `local_${Date.now()}`,
+          email: cleanLogin,
+          displayName: cleanDisplayName,
+          role: regRole,
+          venueName: regRole === 'cashier' ? venueName : undefined,
+        });
+
+        setSuccessMessage('Аккаунт успешно создан!');
+        setTimeout(() => {
+          handleClose();
+        }, 900);
+        return;
+      } else {
+        const found = localUsers.find((u) => u.login === cleanLogin);
+        if (found) {
+          if (found.pass !== cleanPassword) {
+            setError('Неверный пароль для этого логина.');
+            setLoading(false);
+            return;
+          }
+
+          setCurrentUser({
+            id: `local_${Date.now()}`,
+            email: found.login,
+            displayName: found.name,
+            role: found.role,
+            venueName: found.venueName,
+          });
+
+          setSuccessMessage('Вы успешно вошли в профиль!');
+          setTimeout(() => {
+            handleClose();
+          }, 800);
+          return;
+        } else {
+          // If no local user found, let standard demo fallback work for convenience
+          const assignedRole = cleanLogin.includes('partner') || cleanLogin.includes('cafe') ? 'cashier' : 'student';
+          setCurrentUser({
+            id: `local_${Math.random().toString(36).substring(2, 9)}`,
+            email: cleanLogin,
+            displayName: cleanDisplayName,
+            role: assignedRole,
+            venueName: assignedRole === 'cashier' ? venueName : undefined,
+          });
+
+          setSuccessMessage('Вы успешно вошли в профиль!');
+          setTimeout(() => {
+            handleClose();
+          }, 800);
+          return;
+        }
+      }
 
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Произошла непредвиденная ошибка';
@@ -186,7 +304,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
   return createPortal(
     <div 
       className="fixed inset-0 z-[9999] overflow-y-auto p-3 sm:p-6 bg-slate-900/60 backdrop-blur-sm flex justify-center items-start sm:items-center animate-fade-in"
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div 
         className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-scale-up max-h-[92vh] flex flex-col"
@@ -204,7 +322,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition cursor-pointer shrink-0"
             title="Закрыть"
           >
@@ -235,7 +353,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 truncate mt-0.5">
-                  {currentUser.email}
+                  @{currentUser.email.replace('@studcity.internal', '')}
                 </p>
               </div>
             </div>
@@ -257,7 +375,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
                 type="button"
                 onClick={() => {
                   logout();
-                  onClose();
+                  handleClose();
                 }}
                 className="w-full py-3 px-4 rounded-2xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-extrabold text-xs sm:text-sm transition cursor-pointer flex items-center justify-center gap-2 active:scale-95"
               >
@@ -274,10 +392,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
             <div className="p-1 rounded-2xl bg-slate-100 flex items-center gap-1 border border-slate-200/80">
               <button
                 type="button"
-                onClick={() => {
-                  setMode('login');
-                  setError(null);
-                }}
+                onClick={() => switchMode('login')}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                   mode === 'login'
                     ? 'bg-white text-slate-900 shadow-xs'
@@ -289,10 +404,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
 
               <button
                 type="button"
-                onClick={() => {
-                  setMode('register');
-                  setError(null);
-                }}
+                onClick={() => switchMode('register')}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                   mode === 'register'
                     ? 'bg-white text-slate-900 shadow-xs'
@@ -375,18 +487,21 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
                 </div>
               )}
 
-              {/* Email Field */}
+              {/* Username / Login Field */}
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-700">
-                  Электронная почта (Email):
+                  Логин:
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    type="text"
+                    value={loginInput}
+                    onChange={(e) => setLoginInput(e.target.value)}
+                    placeholder="например: arman или coffee_moon"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     required
                     className="w-full bg-white border border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 rounded-2xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 outline-hidden transition"
                   />
@@ -406,6 +521,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Минимум 6 символов"
                     minLength={6}
+                    autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                     required
                     className="w-full bg-white border border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 rounded-2xl pl-10 pr-10 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 outline-hidden transition"
                   />
@@ -434,6 +550,7 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Повторите пароль"
                       minLength={6}
+                      autoComplete="new-password"
                       required
                       className="w-full bg-white border border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 rounded-2xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 outline-hidden transition"
                     />
@@ -468,10 +585,17 @@ export const AuthProfileModal: React.FC<AuthProfileModalProps> = ({ isOpen, onCl
                 </button>
               </div>
 
-              {/* Clean security note */}
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>Ваши данные надежно защищены шифрованием</span>
+              {/* Clean security note and sync status */}
+              <div className="pt-2 border-t border-slate-100 flex flex-col items-center justify-center gap-1 text-[11px] text-slate-400 font-medium text-center">
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>Шифрование данных и безопасная сессия</span>
+                </div>
+                {!isSupabaseConfigured && (
+                  <span className="text-[10px] text-amber-600 font-normal">
+                    (Локальный режим: синхронизация между телефоном и ноутбуком требует подключения Supabase)
+                  </span>
+                )}
               </div>
             </form>
           </div>

@@ -24,7 +24,8 @@ import {
   MapPin,
   Eye,
   BellRing,
-  AlertCircle
+  AlertCircle,
+  ChevronDown
 } from 'lucide-react';
 
 export const CashierView: React.FC = () => {
@@ -47,6 +48,7 @@ export const CashierView: React.FC = () => {
   const [selectedVenueId, setSelectedVenueId] = useState<string>('coffeemoon-cafe');
   const [inputCode, setInputCode] = useState<string>(activeStudentCode ? activeStudentCode.code : '7492');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isVenueDropdownOpen, setIsVenueDropdownOpen] = useState(false);
 
   const activeVenue = offers.find((o) => o.id === selectedVenueId) || offers[0];
 
@@ -158,30 +160,77 @@ export const CashierView: React.FC = () => {
         </div>
 
         {/* Venue Switcher & Return to User Mode */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-2xl">
-            <Store className="w-4 h-4 text-blue-600 shrink-0" />
-            <span className="text-xs font-bold text-slate-600">Заведение:</span>
-            <select
-              value={selectedVenueId}
-              onChange={(e) => {
-                setSelectedVenueId(e.target.value);
-                clearLastValidation();
-              }}
-              className="bg-transparent text-xs sm:text-sm font-extrabold text-slate-900 outline-hidden cursor-pointer"
+        <div className="flex flex-wrap items-center gap-2.5 max-w-full">
+          <div className="relative max-w-full">
+            <button
+              type="button"
+              onClick={() => setIsVenueDropdownOpen(!isVenueDropdownOpen)}
+              className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 px-3 py-2 rounded-2xl max-w-full transition active:scale-98 cursor-pointer shadow-xs"
             >
-              {offers.map((off) => (
-                <option key={off.id} value={off.id}>
-                  {off.name} (-{off.discountPercent}%)
-                </option>
-              ))}
-            </select>
+              <Store className="w-4 h-4 text-indigo-600 shrink-0" />
+              <span className="text-xs font-semibold text-slate-500 shrink-0 hidden xs:inline">Заведение:</span>
+              <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate max-w-[150px] xs:max-w-[200px] sm:max-w-[260px]">
+                {activeVenue.name}
+              </span>
+              <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md shrink-0">
+                -{activeVenue.discountPercent}%
+              </span>
+              <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isVenueDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isVenueDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsVenueDropdownOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-2 w-72 sm:w-84 max-w-[calc(100vw-32px)] bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-1.5 space-y-1 max-h-80 overflow-y-auto animate-scale-up">
+                  <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Выберите точку для кассы
+                  </div>
+                  {offers.map((off) => {
+                    const isSelected = off.id === selectedVenueId;
+                    return (
+                      <button
+                        key={off.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVenueId(off.id);
+                          clearLastValidation();
+                          setIsVenueDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-left transition cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-50/80 text-blue-950 font-bold border border-blue-200/60'
+                            : 'hover:bg-slate-50 text-slate-700'
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-bold truncate">
+                            {off.name}
+                          </p>
+                          <p className="text-[11px] text-slate-400 truncate">
+                            {off.address}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                            -{off.discountPercent}%
+                          </span>
+                          {isSelected && <Check className="w-4 h-4 text-blue-600 stroke-[2.5]" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           <button
             type="button"
             onClick={() => setRole('student')}
-            className="text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-2xl transition cursor-pointer"
+            className="hidden sm:inline-flex text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3.5 py-2 rounded-2xl transition cursor-pointer"
           >
             ← В режим пользователя
           </button>

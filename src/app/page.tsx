@@ -48,7 +48,7 @@ const AuthProfileModal = dynamic(
 );
 
 function AppContent() {
-  const { role, setRole, studentTab, setStudentTab, isAuthModalOpen, setAuthModalOpen } = useApp();
+  const { role, setRole, studentTab, setStudentTab, isAuthModalOpen, setAuthModalOpen, currentUser } = useApp();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
@@ -58,6 +58,8 @@ function AppContent() {
       },
     });
   }, []);
+
+  const isBusinessUser = currentUser?.role === 'cashier' || role === 'cashier';
 
   return (
     <div className={`min-h-screen flex flex-col bg-slate-50 w-full max-w-full overflow-x-hidden ${
@@ -93,76 +95,88 @@ function AppContent() {
       </footer>
 
       {/* Modern Mobile Bottom Navigation Bar */}
-      {role === 'student' ? (
-        <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] px-4 py-2 pb-3">
-          <div className="grid grid-cols-2 max-w-xs mx-auto">
-            {/* 1. Offers / Slots Tab */}
-            <button
-              onClick={() => {
-                setRole('student');
-                setStudentTab('offers');
-              }}
-              className="flex flex-col items-center justify-center py-1 px-3 transition active:scale-95 cursor-pointer group"
-            >
-              <div className={`px-6 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-                studentTab === 'offers'
-                  ? 'bg-blue-50 text-blue-600 scale-105'
-                  : 'text-slate-400 group-hover:text-slate-600'
-              }`}>
-                <Flame className={`w-6 h-6 transition-all ${
-                  studentTab === 'offers' ? 'stroke-[2.2]' : 'stroke-[1.8]'
-                }`} />
-              </div>
-              <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
-                studentTab === 'offers'
-                  ? 'font-black text-blue-600'
-                  : 'font-semibold text-slate-500'
-              }`}>
-                Скидки
-              </span>
-            </button>
-
-            {/* 2. Map Tab */}
-            <button
-              onClick={() => {
-                setRole('student');
-                setStudentTab('map');
-              }}
-              className="flex flex-col items-center justify-center py-1 px-3 transition active:scale-95 cursor-pointer group"
-            >
-              <div className={`px-6 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-                studentTab === 'map'
-                  ? 'bg-blue-50 text-blue-600 scale-105'
-                  : 'text-slate-400 group-hover:text-slate-600'
-              }`}>
-                <MapPin className={`w-6 h-6 transition-all ${
-                  studentTab === 'map' ? 'stroke-[2.2]' : 'stroke-[1.8]'
-                }`} />
-              </div>
-              <span className={`text-xs mt-0.5 tracking-tight transition-colors ${
-                studentTab === 'map'
-                  ? 'font-black text-blue-600'
-                  : 'font-semibold text-slate-500'
-              }`}>
-                Карта
-              </span>
-            </button>
-          </div>
-        </nav>
-      ) : (
-        <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] px-4 py-2.5 pb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Store className="w-4 h-4 text-indigo-600" />
-            <span className="text-xs font-black text-slate-900">Бизнес-партнер</span>
-          </div>
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] px-3 py-2 pb-3">
+        <div className={`grid ${isBusinessUser ? 'grid-cols-3' : 'grid-cols-2'} max-w-xs mx-auto gap-1`}>
+          {/* 1. Offers / Slots Tab */}
           <button
-            onClick={() => setRole('student')}
-            className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl border border-blue-100 transition active:scale-95 cursor-pointer"
+            onClick={() => {
+              setRole('student');
+              setStudentTab('offers');
+            }}
+            className="flex flex-col items-center justify-center py-1 px-2 transition active:scale-95 cursor-pointer group"
           >
-            ← В режим пользователя
+            <div className={`px-4 sm:px-6 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+              role === 'student' && studentTab === 'offers'
+                ? 'bg-blue-50 text-blue-600 scale-105'
+                : 'text-slate-400 group-hover:text-slate-600'
+            }`}>
+              <Flame className={`w-5 h-5 transition-all ${
+                role === 'student' && studentTab === 'offers' ? 'stroke-[2.2]' : 'stroke-[1.8]'
+              }`} />
+            </div>
+            <span className={`text-[11px] mt-0.5 tracking-tight transition-colors ${
+              role === 'student' && studentTab === 'offers'
+                ? 'font-black text-blue-600'
+                : 'font-semibold text-slate-500'
+            }`}>
+              Скидки
+            </span>
           </button>
-        </nav>
-      )}
+
+          {/* 2. Map Tab */}
+          <button
+            onClick={() => {
+              setRole('student');
+              setStudentTab('map');
+            }}
+            className="flex flex-col items-center justify-center py-1 px-2 transition active:scale-95 cursor-pointer group"
+          >
+            <div className={`px-4 sm:px-6 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+              role === 'student' && studentTab === 'map'
+                ? 'bg-blue-50 text-blue-600 scale-105'
+                : 'text-slate-400 group-hover:text-slate-600'
+            }`}>
+              <MapPin className={`w-5 h-5 transition-all ${
+                role === 'student' && studentTab === 'map' ? 'stroke-[2.2]' : 'stroke-[1.8]'
+              }`} />
+            </div>
+            <span className={`text-[11px] mt-0.5 tracking-tight transition-colors ${
+              role === 'student' && studentTab === 'map'
+                ? 'font-black text-blue-600'
+                : 'font-semibold text-slate-500'
+            }`}>
+              Карта
+            </span>
+          </button>
+
+          {/* 3. Cashier Tab (Always available for Business users on mobile) */}
+          {isBusinessUser && (
+            <button
+              onClick={() => {
+                setRole('cashier');
+              }}
+              className="flex flex-col items-center justify-center py-1 px-2 transition active:scale-95 cursor-pointer group"
+            >
+              <div className={`px-4 sm:px-6 py-1.5 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+                role === 'cashier'
+                  ? 'bg-indigo-50 text-indigo-600 scale-105'
+                  : 'text-slate-400 group-hover:text-slate-600'
+              }`}>
+                <Store className={`w-5 h-5 transition-all ${
+                  role === 'cashier' ? 'stroke-[2.2]' : 'stroke-[1.8]'
+                }`} />
+              </div>
+              <span className={`text-[11px] mt-0.5 tracking-tight transition-colors ${
+                role === 'cashier'
+                  ? 'font-black text-indigo-600'
+                  : 'font-semibold text-slate-500'
+              }`}>
+                Касса
+              </span>
+            </button>
+          )}
+        </div>
+      </nav>
 
       {/* Global PIN & QR Access Modal */}
       <QrModal />
